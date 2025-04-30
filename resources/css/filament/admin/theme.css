@@ -1,0 +1,70 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+/* RTL support */
+html, body {
+    direction: rtl;
+    text-align: right;
+}
+
+/* الألوان المخصصة والأنماط الإضافية */
+.fi-sidebar {
+    @apply bg-gray-900;
+}
+
+.fi-sidebar-header {
+    @apply bg-gray-950;
+}
+
+/* تخصيص القوائم */
+.fi-nav-item-label {
+    @apply font-medium;
+}
+
+/* تخصيص الجداول */
+.fi-ta-header-cell {
+    @apply bg-gray-100;
+}
+
+/* تخصيص الأزرار */
+.fi-btn-primary {
+    @apply transition-all hover:shadow-md hover:translate-y-[-1px];
+}
+
+/* تصحيح المشاكل المتعلقة بالاتجاه من اليمين إلى اليسار */
+.fi-topbar {
+    @apply flex-row-reverse;
+}
+
+.fi-dropdown-panel {
+    @apply right-0;
+}
+
+/* تصحيح اتجاه الأيقونات */
+.fi-icon {
+    transform: scaleX(-1);
+}
+
+/* استثناءات للأيقونات التي لا تحتاج إلى عكس */
+.fi-icon.heroicon-o-home,
+.fi-icon.heroicon-m-arrow-trending-up,
+.fi-icon.heroicon-m-arrow-trending-down,
+.fi-icon.heroicon-m-chart-bar,
+.fi-icon.heroicon-m-building-library,
+.fi-icon.heroicon-m-academic-cap,
+.fi-icon.heroicon-m-user-group,
+.fi-icon.heroicon-m-users,
+.fi-icon.heroicon-m-exclamation-triangle {
+    transform: scaleX(1);
+}
+
+/* تخصيص الخطوط للعربية */
+@font-face {
+    font-family: 'Cairo';
+    src: url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+}

@@ -1,0 +1,340 @@
+# توثيق نظام المستخدمين والصلاحيات - مشروع إدارة مركز تحفيظ القرآن
+
+## مقدمة
+
+هذا الملف يوثق خطوات إنشاء وتنفيذ نظام المستخدمين والصلاحيات في مشروع إدارة مركز تحفيظ القرآن. الهدف هو إنشاء نظام مرن وقابل للتوسع يسمح بإدارة المستخدمين والأدوار والصلاحيات بشكل فعال.
+
+## الأدوار الرئيسية في النظام
+
+1. **مدير النظام (Super Admin)**:
+   - صلاحيات كاملة على جميع أقسام النظام
+   - إدارة المستخدمين والأدوار والصلاحيات
+
+2. **مدير المركز (Admin)**:
+   - صلاحيات إدارية واسعة لإدارة المركز
+   - إدارة الحلقات والمساجد والموظفين
+
+3. **المشرف التربوي (Supervisor)**:
+   - الإشراف على الحلقات والمعلمين
+   - متابعة وتقييم الأداء التعليمي
+
+4. **المعلم (Teacher)**:
+   - إدارة الحلقة وطلابها
+   - تسجيل الحضور والغياب والتسميع
+
+5. **الموظف الإداري (Staff)**:
+   - مهام إدارية محددة
+   - صلاحيات محدودة حسب القسم
+
+6. **الطالب (Student)**:
+   - الاطلاع على منهجه وإنجازاته
+   - متابعة الحضور والتسميع
+
+## الصلاحيات حسب الوحدات الوظيفية
+
+سيتم تنظيم الصلاحيات حسب الوحدات الوظيفية التالية:
+
+1. **إدارة المستخدمين**: إنشاء، تعديل، حذف، تفعيل، تعطيل المستخدمين
+2. **إدارة الحلقات**: إنشاء، تعديل، حذف، إدارة الحلقات القرآنية
+3. **إدارة المساجد**: إنشاء، تعديل، حذف المساجد
+4. **إدارة الطلاب**: إضافة، تعديل، حذف بيانات الطلاب
+5. **إدارة المعلمين**: إضافة، تعديل، حذف بيانات المعلمين
+6. **إدارة الحضور**: تسجيل وتعديل بيانات الحضور والغياب
+7. **إدارة التسميع**: تسجيل وتعديل بيانات تسميع الطلاب
+8. **إدارة الموظفين**: إضافة، تعديل، حذف بيانات الموظفين
+9. **إدارة المالية**: إدارة الرواتب، المصروفات، الإيرادات
+10. **التقارير**: عرض وطباعة التقارير المختلفة
+11. **الإعدادات**: إدارة إعدادات النظام
+
+## خطوات التنفيذ
+
+### الخطوة 1: تثبيت حزمة Spatie Laravel Permission
+
+حزمة Spatie Laravel Permission هي حزمة مفتوحة المصدر توفر آلية سهلة لإدارة الأدوار والصلاحيات في تطبيقات Laravel. لتثبيت الحزمة، يتم تنفيذ الأمر التالي:
+
+```bash
+composer require spatie/laravel-permission
+```
+
+### الخطوة 2: نشر ملفات الإعدادات والهجرات وتنفيذها
+
+بعد تثبيت حزمة Spatie Laravel Permission بنجاح، يجب نشر ملفات الإعدادات والهجرات الخاصة بها ثم تنفيذ هذه الهجرات لإنشاء جداول الأدوار والصلاحيات في قاعدة البيانات:
+
+```bash
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+```
+
+بعد تنفيذ الأمر السابق، سيتم إنشاء ملف إعدادات جديد في المجلد `config/permission.php` وملفات هجرات في المجلد `database/migrations` تحتوي على تعريفات جداول الأدوار والصلاحيات.
+
+ثم نقوم بتنفيذ هذه الهجرات لإنشاء الجداول في قاعدة البيانات:
+
+```bash
+php artisan migrate
+```
+
+بعد تنفيذ هذه الأوامر، سيتم إنشاء الجداول التالية في قاعدة البيانات:
+- `roles`: لتخزين الأدوار المختلفة في النظام.
+- `permissions`: لتخزين الصلاحيات المختلفة في النظام.
+- `model_has_roles`: لربط الأدوار بالمستخدمين أو أي نماذج أخرى.
+- `model_has_permissions`: لربط الصلاحيات مباشرة بالمستخدمين.
+- `role_has_permissions`: لربط الصلاحيات بالأدوار.
+
+### الخطوة 3: إنشاء نموذج المستخدم وتعديله للعمل مع نظام الصلاحيات
+
+الآن سنقوم بإنشاء نموذج المستخدم إذا لم يكن موجوداً، وتعديله ليعمل مع نظام الصلاحيات:
+
+1. إنشاء هجرة لجدول المستخدمين:
+
+```bash
+php artisan make:migration create_users_table
+```
+
+2. تعديل ملف الهجرة لإضافة الحقول الضرورية للمستخدمين:
+
+```php
+// database/migrations/xxxx_xx_xx_create_users_table.php
+public function up()
+{
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->string('email')->unique();
+        $table->string('username')->unique();
+        $table->timestamp('email_verified_at')->nullable();
+        $table->string('password');
+        $table->string('phone')->nullable();
+        $table->boolean('is_active')->default(true);
+        $table->rememberToken();
+        $table->timestamps();
+    });
+}
+```
+
+3. إنشاء نموذج المستخدم:
+
+```bash
+php artisan make:model User
+```
+
+4. تعديل نموذج المستخدم ليعمل مع نظام الصلاحيات:
+
+```php
+// app/Models/User.php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'username',
+        'password',
+        'phone',
+        'is_active',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'is_active' => 'boolean',
+    ];
+}
+```
+
+إضافة السمة `HasRoles` من حزمة Spatie Laravel Permission يمنح نموذج المستخدم القدرة على العمل مع الأدوار والصلاحيات، مثل استخدام الدوال التالية:
+- `assignRole()` لإسناد دور للمستخدم
+- `hasRole()` للتحقق مما إذا كان المستخدم له دور معين
+- `hasPermissionTo()` للتحقق مما إذا كان المستخدم لديه صلاحية معينة
+
+### الخطوة 4: إنشاء البذور (Seeders) للأدوار والصلاحيات
+
+بعد إنشاء نموذج المستخدم وإضافة السمة HasRoles له وتنفيذ الهجرات لإنشاء الجداول اللازمة، قمنا بإنشاء البذور التالية:
+
+1. **RoleSeeder**: لإنشاء الأدوار الرئيسية في النظام:
+   - مدير النظام (super_admin)
+   - مدير المركز (admin)
+   - المشرف التربوي (supervisor)
+   - المعلم (teacher)
+   - الموظف الإداري (staff)
+   - الطالب (student)
+
+```php
+// database/seeders/RoleSeeder.php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+
+class RoleSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // إنشاء الأدوار الرئيسية في النظام
+        $roles = [
+            [
+                'name' => 'super_admin',
+                'arabic_name' => 'مدير النظام',
+                'description' => 'لديه جميع الصلاحيات في النظام',
+            ],
+            [
+                'name' => 'admin',
+                'arabic_name' => 'مدير المركز',
+                'description' => 'صلاحيات إدارية واسعة لإدارة المركز',
+            ],
+            [
+                'name' => 'supervisor',
+                'arabic_name' => 'المشرف التربوي',
+                'description' => 'الإشراف على الحلقات والمعلمين',
+            ],
+            [
+                'name' => 'teacher',
+                'arabic_name' => 'المعلم',
+                'description' => 'إدارة الحلقة وطلابها',
+            ],
+            [
+                'name' => 'staff',
+                'arabic_name' => 'الموظف الإداري',
+                'description' => 'مهام إدارية محددة',
+            ],
+            [
+                'name' => 'student',
+                'arabic_name' => 'الطالب',
+                'description' => 'الاطلاع على منهجه وإنجازاته',
+            ],
+        ];
+
+        foreach ($roles as $role) {
+            Role::firstOrCreate(
+                ['name' => $role['name']],
+                [
+                    'guard_name' => 'web',
+                ]
+            );
+        }
+    }
+}
+```
+
+2. **PermissionSeeder**: لإنشاء الصلاحيات حسب الوحدات الوظيفية:
+   - تم إنشاء 71 صلاحية موزعة على 11 مجموعة وظيفية:
+     - إدارة المستخدمين (9 صلاحيات)
+     - إدارة الحلقات (9 صلاحيات)
+     - إدارة المساجد (5 صلاحيات)
+     - إدارة الطلاب (8 صلاحيات)
+     - إدارة المعلمين (6 صلاحيات)
+     - إدارة الحضور (5 صلاحيات)
+     - إدارة التسميع (5 صلاحيات)
+     - إدارة الموظفين (5 صلاحيات)
+     - إدارة المالية (11 صلاحية)
+     - التقارير (4 صلاحيات)
+     - الإعدادات (4 صلاحيات)
+
+3. **RolePermissionSeeder**: لربط الأدوار بالصلاحيات المناسبة:
+   - دور "مدير النظام" تم منحه جميع الصلاحيات (71 صلاحية)
+   - دور "مدير المركز" تم منحه 63 صلاحية
+   - دور "المشرف التربوي" تم منحه 19 صلاحية
+   - دور "المعلم" تم منحه 12 صلاحية
+   - دور "الموظف الإداري" تم منحه 5 صلاحيات
+   - دور "الطالب" تم منحه 2 صلاحيات فقط
+
+4. **تعديل DatabaseSeeder**: لتنفيذ البذور بالترتيب الصحيح، وإنشاء مستخدمين افتراضيين لكل دور:
+
+```php
+public function run(): void
+{
+    // إنشاء الأدوار والصلاحيات
+    $this->call([
+        RoleSeeder::class,           // إنشاء الأدوار
+        PermissionSeeder::class,      // إنشاء الصلاحيات
+        RolePermissionSeeder::class,  // ربط الأدوار بالصلاحيات
+    ]);
+
+    // إنشاء مستخدم مدير النظام
+    $admin = User::firstOrCreate(
+        ['email' => 'admin@quran-center.com'],
+        [
+            'name' => 'مدير النظام',
+            'username' => 'admin',
+            'password' => Hash::make('admin123'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]
+    );
+
+    // إسناد دور مدير النظام للمستخدم
+    $admin->assignRole('super_admin');
+    
+    // إنشاء مستخدم تجريبي لكل دور
+    $roles = ['admin', 'supervisor', 'teacher', 'staff', 'student'];
+    foreach ($roles as $role) {
+        $user = User::firstOrCreate(
+            ['email' => $role . '@quran-center.com'],
+            [
+                'name' => 'مستخدم ' . $role,
+                'username' => $role,
+                'password' => Hash::make($role . '123'),
+                'email_verified_at' => now(),
+                'is_active' => true,
+            ]
+        );
+        
+        $user->assignRole($role);
+    }
+}
+```
+
+تم تنفيذ البذور بنجاح وإنشاء الأدوار والصلاحيات وربطها ببعضها البعض، وأصبح النظام الآن جاهزاً لاستخدام نظام المستخدمين والصلاحيات.
+
+### الخطوة 5: فحص المستخدمين الافتراضيين المنشأة
+
+تم إنشاء المستخدمين الافتراضيين التاليين لاختبار النظام:
+
+1. **مدير النظام**:
+   - البريد الإلكتروني: admin@quran-center.com
+   - اسم المستخدم: admin
+   - كلمة المرور: admin123
+   - الدور: super_admin
+
+2. **مدير المركز**:
+   - البريد الإلكتروني: admin@quran-center.com
+   - اسم المستخدم: admin
+   - كلمة المرور: admin123
+   - الدور: admin
+
+3. **المشرف التربوي**:
+   - البريد الإلكتروني: supervisor@quran-center.com
+   - اسم المستخدم: supervisor
+   - كلمة المرور: supervisor123
+   - الدور: supervisor
+
+4. **المعلم**:
+   - البريد الإلكتروني: teacher@quran-center.com
+   - اسم المستخدم: teacher
+   - كلمة المرور: teacher123
+   - الدور: teacher
+
+5. **الموظف الإداري**:
+   - البريد الإلكتروني: staff@quran-center.com
+   - اسم المستخدم: staff
+   - كلمة المرور: staff123
+   - الدور: staff
+
+6. **الطالب**:
+   - البريد الإلكتروني: student@quran-center.com
+   - اسم المستخدم: student
+   - كلمة المرور: student123
+   - الدور: student

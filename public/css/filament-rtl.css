@@ -1,0 +1,63 @@
+/* دعم الاتجاه من اليمين إلى اليسار */
+html, body {
+    direction: rtl;
+    text-align: right;
+}
+
+/* تصحيح المشاكل المتعلقة بالاتجاه من اليمين إلى اليسار */
+.fi-topbar {
+    flex-direction: row-reverse !important;
+}
+
+.fi-dropdown-panel {
+    right: 0 !important;
+    left: auto !important;
+}
+
+/* تصحيح اتجاه الأيقونات */
+.fi-icon {
+    transform: scaleX(-1);
+}
+
+/* استثناءات للأيقونات التي لا تحتاج إلى عكس */
+.fi-icon.heroicon-o-home,
+.fi-icon.heroicon-m-arrow-trending-up,
+.fi-icon.heroicon-m-arrow-trending-down,
+.fi-icon.heroicon-m-chart-bar,
+.fi-icon.heroicon-m-building-library,
+.fi-icon.heroicon-m-academic-cap,
+.fi-icon.heroicon-m-user-group,
+.fi-icon.heroicon-m-users,
+.fi-icon.heroicon-m-exclamation-triangle,
+.fi-icon.heroicon-m-banknotes,
+.fi-icon.heroicon-m-currency-dollar,
+.fi-icon.heroicon-m-user-plus,
+.fi-icon.heroicon-m-arrow-path {
+    transform: scaleX(1);
+}
+
+/* تخصيص الأنماط الإضافية لـ Filament */
+.fi-sidebar {
+    background-color: #1a202c;
+}
+
+.fi-sidebar-header {
+    background-color: #0f172a;
+}
+
+.fi-nav-item-label {
+    font-weight: 500;
+}
+
+.fi-ta-header-cell {
+    background-color: #f3f4f6;
+}
+
+.fi-btn-primary {
+    transition: all 0.2s ease;
+}
+
+.fi-btn-primary:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
