@@ -140,7 +140,7 @@
                 <div class="welcome-text">
                     <h1 class="text-4xl font-bold mb-4">بـسم الـله </h1>
                     <p class="text-lg mb-4">
-                        نظام إدارة حلقات القرآن يمتلك بيئة متكاملة .
+                        نظام إدارة حلقات القرآن الكريم يمتلك بيئة متكاملة .
                         
                     </p>
                     <ul class="welcome-list">
