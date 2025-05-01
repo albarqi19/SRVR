@@ -138,14 +138,14 @@
                     <img src="{{ asset('images/logo_home.png') }}" alt="GARB Logo" class="h-48 w-auto">
                 </div>
                 <div class="welcome-text">
-                    <h1 class="text-4xl font-bold mb-4">هيا نبدأ</h1>
+                    <h1 class="text-4xl font-bold mb-4">بـسم الـله </h1>
                     <p class="text-lg mb-4">
                         نظام إدارة حلقات القرآن يمتلك بيئة متكاملة .
                         
                     </p>
                     <ul class="welcome-list">
-                        <li>مرحلة تجريبية</li>
-                        <li> غير مكتمل وينقصه الكثير</li>
+                        <li> لوحة تحكم شاملة مع دعم للنماذج</li>
+                        <li> تجريبي غير مكتمل وينقصه الكثير</li>
                     </ul>
                     <div class="mt-4">
                         <a href="/admin" class="btn-primary">
