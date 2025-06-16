@@ -75,16 +75,18 @@ class QuranCircleResource extends Resource
                                 'نشطة' => 'نشطة',
                                 'معلقة' => 'معلقة',
                                 'مغلقة' => 'مغلقة',
-                            ]),
-                        Forms\Components\Select::make('time_period')
+                            ]),                        Forms\Components\Select::make('time_period')
                             ->label('الفترة الزمنية')
                             ->required()
                             ->options([
+                                'عصر' => 'عصر',
+                                'مغرب' => 'مغرب',
+                                'عصر ومغرب' => 'عصر ومغرب',
+                                'كل الأوقات' => 'كل الأوقات',
+                                'صباحية' => 'صباحية',
+                                'مسائية' => 'مسائية',
+                                'ليلية' => 'ليلية',
                                 'الفجر' => 'الفجر',
-                                'الظهر' => 'الظهر',
-                                'العصر' => 'العصر',
-                                'المغرب' => 'المغرب',
-                                'العشاء' => 'العشاء',
                             ]),
                     ])->columns(3),
 
@@ -192,15 +194,17 @@ class QuranCircleResource extends Resource
                         'نشطة' => 'نشطة',
                         'معلقة' => 'معلقة',
                         'مغلقة' => 'مغلقة',
-                    ]),
-                Tables\Filters\SelectFilter::make('time_period')
+                    ]),                Tables\Filters\SelectFilter::make('time_period')
                     ->label('الفترة الزمنية')
                     ->options([
+                        'عصر' => 'عصر',
+                        'مغرب' => 'مغرب',
+                        'عصر ومغرب' => 'عصر ومغرب',
+                        'كل الأوقات' => 'كل الأوقات',
+                        'صباحية' => 'صباحية',
+                        'مسائية' => 'مسائية',
+                        'ليلية' => 'ليلية',
                         'الفجر' => 'الفجر',
-                        'الظهر' => 'الظهر',
-                        'العصر' => 'العصر',
-                        'المغرب' => 'المغرب',
-                        'العشاء' => 'العشاء',
                     ]),
             ])
             ->actions([
@@ -208,6 +212,16 @@ class QuranCircleResource extends Resource
                     ->label('عرض'),
                 Tables\Actions\EditAction::make()
                     ->label('تعديل'),
+                Tables\Actions\Action::make('view_circle_groups')
+                    ->label('الحلقات الفرعية')
+                    ->icon('heroicon-o-user-group')
+                    ->color('success')
+                    ->url(fn (QuranCircle $record): string => 
+                        $record->circle_type === 'حلقة جماعية' 
+                            ? static::getUrl('view', ['record' => $record->id]) . '#relation-manager-quranCircle-circle-groups-relation-manager' 
+                            : '#'
+                    )
+                    ->visible(fn (QuranCircle $record): bool => $record->circle_type === 'حلقة جماعية'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -215,12 +229,12 @@ class QuranCircleResource extends Resource
                         ->label('حذف المحدد'),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
+    }    public static function getRelations(): array
     {
         return [
             RelationManagers\TeacherRelationManager::class,
+            RelationManagers\TeacherAssignmentsRelationManager::class,
+            RelationManagers\CircleGroupsRelationManager::class,
         ];
     }
 

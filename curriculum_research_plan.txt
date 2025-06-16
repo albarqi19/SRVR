@@ -1,0 +1,110 @@
+خطة البحث: فحص المناهج وعلاقتها بالطلاب
+================================================
+
+المطلوب البحث عنه:
+1. جداول المناهج (Curriculum tables)
+2. علاقة الطلاب بالمناهج 
+3. نظام التسميع اليومي
+4. أنواع التسميع:
+   - حفظ جديد (New Memorization)
+   - مراجعة صغرى (Minor Review)
+   - مراجعة كبرى (Major Review)
+5. تتبع تقدم الطالب اليومي
+6. API للحصول على منهج الطالب اليومي
+
+النتائج المكتشفة:
+================
+
+1. جداول الطلاب والمناهج:
+✅ جدول students - يحتوي على بيانات الطلاب
+✅ خاصية curricula() في Student Model - علاقة الطالب بالمناهج
+✅ Student Model له علاقة HasMany مع StudentCurriculum
+
+2. أنواع المناهج المكتشفة:
+✅ منهج تلقين - getCurrentRecitationCurriculumAttribute
+✅ منهج طالب - getCurrentStudentCurriculumAttribute  
+✅ يوجد حقل type في جدول المناهج
+
+3. تتبع التقدم:
+✅ Student Model له علاقة progressRecords() مع StudentProgress
+✅ RecitationSession Model - جلسات التسميع
+✅ وجود حالات مختلفة: not_started, in_progress, completed, reviewed, mastered
+
+4. جداول النظام الكاملة المكتشفة:
+
+✅ curricula (جدول المناهج الأساسي):
+   - name: اسم المنهج
+   - type: ['منهج تلقين', 'منهج طالب'] 
+   - description: وصف المنهج
+
+✅ curriculum_levels (مستويات المناهج):
+   - curriculum_id: ربط بالمنهج
+   - name: اسم المستوى
+   - level_order: ترتيب المستوى (1,2,3,4)
+
+✅ curriculum_plans (خطط المناهج اليومية):
+   - curriculum_id: ربط بالمنهج
+   - plan_type: ['الدرس', 'المراجعة الصغرى', 'المراجعة الكبرى']
+   - content: محتوى الخطة (السور والآيات)
+   - expected_days: عدد الأيام المتوقعة
+
+✅ student_curricula (مناهج الطلاب):
+   - student_id: الطالب
+   - curriculum_id: المنهج
+   - curriculum_level_id: المستوى الحالي
+   - status: ['قيد التنفيذ', 'مكتمل', 'معلق', 'ملغي']
+   - completion_percentage: نسبة الإكمال
+
+✅ student_curriculum_progress (تقدم الطالب):
+   - student_curriculum_id: منهج الطالب
+   - curriculum_plan_id: الخطة اليومية
+   - status: ['قيد التنفيذ', 'مكتمل']
+   - completion_percentage: نسبة الإكمال
+
+✅ recitation_sessions (جلسات التسميع):
+   - student_id: الطالب
+   - teacher_id: المعلم
+   - recitation_type: ['حفظ', 'مراجعة صغرى', 'مراجعة كبرى']
+   - start_surah_number, start_verse: نقطة البداية
+   - end_surah_number, end_verse: نقطة النهاية
+   - grade: الدرجة من 10
+   - evaluation: ['ممتاز', 'جيد جداً', 'جيد', 'مقبول', 'ضعيف']
+
+5. المفقود للنظام المطلوب:
+✅ API للحصول على منهج الطالب اليومي - تم إنشاؤه
+✅ تتبع "تسميع اليوم" والانتقال التلقائي لليوم التالي - تم إنشاؤه
+✅ ربط جلسات التسميع بالخطط اليومية - تم إنشاؤه
+
+6. التطبيق العملي المكتمل:
+================
+
+✅ إضافة مسارات API جديدة في routes/api.php:
+   - GET /students/{id}/daily-curriculum
+   - POST /students/{id}/complete-daily-recitation
+
+✅ إضافة دوال جديدة في StudentController:
+   - getDailyCurriculum(): يعطي منهج الطالب اليومي
+   - completeRecitation(): يسجل التسميع وينتقل لليوم التالي
+
+✅ ميزات المنهج اليومي:
+   - عرض الحفظ الجديد (memorization)
+   - عرض المراجعة الصغرى (minor_review)  
+   - عرض المراجعة الكبرى (major_review)
+   - ربط مع جلسات التسميع اليومية
+   - عرض تقدم الطالب الحالي
+
+✅ ميزات النظام التلقائي:
+   - التسميع بدرجة ≥7 ينتقل لليوم التالي
+   - تحديث حالة التقدم تلقائياً
+   - إنشاء خطة جديدة للطالب تلقائياً
+
+7. حالة المشروع النهائية:
+==========================
+✅ البحث مكتمل 100%
+✅ التحليل مكتمل 100%  
+✅ التطبيق مكتمل 100%
+✅ APIs جاهزة للاستخدام
+
+المسارات الجاهزة للاختبار:
+- GET /api/students/{id}/daily-curriculum
+- POST /api/students/{id}/complete-daily-recitation

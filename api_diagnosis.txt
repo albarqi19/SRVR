@@ -1,0 +1,39 @@
+<?php
+
+// Simple diagnostic without full Laravel bootstrap
+echo "=== API vs Direct Call Comparison ===" . PHP_EOL;
+
+// Show the difference between what works (direct) vs what fails (API)
+echo "✅ WORKING - Direct PHP Call:" . PHP_EOL;
+echo "   - Uses: RecitationSession::create() directly" . PHP_EOL;
+echo "   - No validation rules applied" . PHP_EOL;
+echo "   - No API middleware" . PHP_EOL;
+echo "   - No JSON parsing" . PHP_EOL;
+
+echo PHP_EOL;
+echo "❌ FAILING - API Call:" . PHP_EOL;
+echo "   - HTTP 422 Unprocessable Entity" . PHP_EOL;
+echo "   - Goes through RecitationSessionController" . PHP_EOL;
+echo "   - Uses Validator::make() with rules" . PHP_EOL;
+echo "   - Requires JSON Content-Type" . PHP_EOL;
+echo "   - May have middleware issues" . PHP_EOL;
+
+echo PHP_EOL;
+echo "🔍 LIKELY CAUSES:" . PHP_EOL;
+echo "   1. Validation rule mismatch (most likely)" . PHP_EOL;
+echo "   2. Arabic text encoding in JSON" . PHP_EOL;
+echo "   3. Missing or incorrect Content-Type" . PHP_EOL;
+echo "   4. Middleware blocking request" . PHP_EOL;
+
+echo PHP_EOL;
+echo "🚀 QUICK FIX SUGGESTIONS:" . PHP_EOL;
+echo "   1. Add curriculum_id to API request ✅ (already tried)" . PHP_EOL;
+echo "   2. Use English values for validation" . PHP_EOL;
+echo "   3. Check exact validation rules in Controller" . PHP_EOL;
+echo "   4. Enable API logging to see exact error" . PHP_EOL;
+
+echo PHP_EOL;
+echo "📋 NEXT STEPS:" . PHP_EOL;
+echo "   1. Modify Controller to log validation errors" . PHP_EOL;
+echo "   2. Try API call with English values" . PHP_EOL;
+echo "   3. Check Laravel logs for detailed error" . PHP_EOL;

@@ -31,6 +31,22 @@ class HolidayResource extends Resource
     // ترتيب المورد في القائمة
     protected static ?int $navigationSort = 6;
 
+    /**
+     * إظهار عدد أيام الإجازة في مربع العدد (Badge) في القائمة
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+    
+    /**
+     * تحديد لون مربع العدد (Badge) في القائمة
+     */
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

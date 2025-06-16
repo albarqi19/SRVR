@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Mosque extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * الخصائص التي يمكن تعبئتها بشكل جماعي.
@@ -19,6 +20,7 @@ class Mosque extends Model
     protected $fillable = [
         'name',
         'neighborhood',
+        'street',
         'location_lat',
         'location_long',
         'contact_number',
@@ -38,6 +40,22 @@ class Mosque extends Model
     public function tasks(): MorphMany
     {
         return $this->morphMany(Task::class, 'taskable');
+    }
+
+    /**
+     * جداول المعلمين في هذا المسجد
+     */
+    public function teacherSchedules(): HasMany
+    {
+        return $this->hasMany(TeacherMosqueSchedule::class);
+    }
+
+    /**
+     * جداول المعلمين النشطة في هذا المسجد
+     */
+    public function activeTeacherSchedules(): HasMany
+    {
+        return $this->hasMany(TeacherMosqueSchedule::class)->where('is_active', true);
     }
 
     /**
@@ -66,5 +84,73 @@ class Mosque extends Model
     public function getCirclesCountAttribute(): int
     {
         return $this->quranCircles()->count();
+    }
+
+    /**
+     * الحصول على العنوان الكامل للمسجد
+     */
+    public function getAddressAttribute(): string
+    {
+        $address = '';
+        if ($this->neighborhood) {
+            $address .= $this->neighborhood;
+        }
+        if ($this->street) {
+            $address .= ($address ? '، ' : '') . $this->street;
+        }
+        return $address ?: 'غير محدد';
+    }
+
+    /**
+     * حساب عدد المعلمين النشطين في المسجد
+     */
+    public function getActiveTeachersCountAttribute(): int
+    {
+        return $this->activeTeacherSchedules()->distinct('teacher_id')->count('teacher_id');
+    }
+
+    /**
+     * الحصول على المعلمين النشطين في يوم معين
+     */
+    public function getActiveTeachersForDay(string $day): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->activeTeacherSchedules()
+                    ->where('day_of_week', $day)
+                    ->with('teacher')
+                    ->get()
+                    ->pluck('teacher');
+    }
+    
+    /**
+     * الحصول على رابط الموقع في خرائط جوجل
+     */
+    public function getGoogleMapsUrlAttribute(): ?string
+    {
+        if (!$this->location_lat || !$this->location_long) {
+            return null;
+        }
+        
+        $query = [];
+        
+        if ($this->name) {
+            $query[] = 'q=' . urlencode($this->name);
+        }
+        
+        // إضافة المنطقة والشارع إلى العنوان في الرابط
+        $address = '';
+        if ($this->neighborhood) {
+            $address .= $this->neighborhood;
+        }
+        if ($this->street) {
+            $address .= ($address ? '، ' : '') . $this->street;
+        }
+        
+        if ($address) {
+            $query[] = 'address=' . urlencode($address);
+        }
+        
+        $query[] = 'll=' . $this->location_lat . ',' . $this->location_long;
+        
+        return 'https://www.google.com/maps?' . implode('&', $query);
     }
 }

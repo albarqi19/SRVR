@@ -45,9 +45,14 @@ class QuranCirclesRelationManager extends RelationManager
                     ->label('الفترة الزمنية')
                     ->required()
                     ->options([
+                        'عصر' => 'عصر',
+                        'مغرب' => 'مغرب',
+                        'عصر ومغرب' => 'عصر ومغرب',
+                        'كل الأوقات' => 'كل الأوقات',
                         'صباحية' => 'صباحية',
                         'مسائية' => 'مسائية',
                         'ليلية' => 'ليلية',
+                        'الفجر' => 'الفجر',
                     ]),
                 Forms\Components\TextInput::make('registration_link')
                     ->label('رابط التسجيل')
@@ -114,7 +119,7 @@ class QuranCirclesRelationManager extends RelationManager
                     ->boolean(),
                 Tables\Columns\TextColumn::make('teacher.name')
                     ->label('المعلم')
-                    ->visible(fn ($record) => $record->circle_type === 'حلقة فردية'),
+                    ->visible(fn ($record) => $record !== null && $record->circle_type === 'حلقة فردية'),
                 Tables\Columns\TextColumn::make('supervisor.name')
                     ->label('المشرف')
                     ->sortable(),
@@ -140,9 +145,14 @@ class QuranCirclesRelationManager extends RelationManager
                 Tables\Filters\SelectFilter::make('time_period')
                     ->label('الفترة الزمنية')
                     ->options([
+                        'عصر' => 'عصر',
+                        'مغرب' => 'مغرب',
+                        'عصر ومغرب' => 'عصر ومغرب',
+                        'كل الأوقات' => 'كل الأوقات',
                         'صباحية' => 'صباحية',
                         'مسائية' => 'مسائية',
                         'ليلية' => 'ليلية',
+                        'الفجر' => 'الفجر',
                     ]),
             ])
             ->headerActions([

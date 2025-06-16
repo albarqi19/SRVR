@@ -61,6 +61,9 @@ class PermissionSeeder extends Seeder
                 'manage_student_attendance' => 'إدارة حضور الطلاب',
                 'view_own_progress' => 'عرض التقدم الشخصي (للطالب نفسه)',
                 'view_own_attendance' => 'عرض سجل الحضور الشخصي (للطالب نفسه)',
+                'transfer_students' => 'نقل الطلاب بين الحلقات',
+                'approve_student_transfers' => 'الموافقة على طلبات نقل الطلاب',
+                'view_student_transfer_requests' => 'عرض طلبات نقل الطلاب',
             ],
 
             // إدارة المعلمين

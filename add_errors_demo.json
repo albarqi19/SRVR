@@ -1,0 +1,34 @@
+{
+    "session_id": "RS-20250609-074219-0001",
+    "errors": [
+        {
+            "surah_number": 1,
+            "verse_number": 2,
+            "word_text": "رب",
+            "error_type": "تجويد",
+            "correction_note": "عدم تطبيق القلقلة بشكل صحيح في حرف الباء",
+            "teacher_note": "يحتاج إلى مراجعة أحكام القلقلة وتطبيقها بوضوح",
+            "is_repeated": false,
+            "severity_level": "متوسط"
+        },
+        {
+            "surah_number": 1,
+            "verse_number": 3,
+            "word_text": "الرحمن",
+            "error_type": "نطق",
+            "correction_note": "عدم وضوح في نطق حرف النون",
+            "teacher_note": "مراجعة مخارج الحروف وتدريب على النطق الصحيح",
+            "is_repeated": true,
+            "severity_level": "خفيف"
+        },        {
+            "surah_number": 1,
+            "verse_number": 4,
+            "word_text": "الدين",
+            "error_type": "ترتيل",
+            "correction_note": "عدم مراعاة أحكام المد الطبيعي",
+            "teacher_note": "مراجعة أحكام المدود وتطبيقها بالمقدار الصحيح",
+            "is_repeated": false,
+            "severity_level": "شديد"
+        }
+    ]
+}

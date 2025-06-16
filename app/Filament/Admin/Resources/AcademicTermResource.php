@@ -30,6 +30,22 @@ class AcademicTermResource extends Resource
     
     // ترتيب المورد في القائمة
     protected static ?int $navigationSort = 5;
+    
+    /**
+     * إظهار عدد العناصر في مربع العدد (Badge) في القائمة
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    /**
+     * تحديد لون مربع العدد (Badge) في القائمة
+     */
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning'; // اللون البرتقالي للفصول الدراسية
+    }
 
     public static function form(Form $form): Form
     {

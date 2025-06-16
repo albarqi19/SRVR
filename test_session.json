@@ -1,0 +1,18 @@
+{
+    "student_id": 1,
+    "teacher_id": 1,
+    "quran_circle_id": 1,
+    "curriculum_id": 6,
+    "start_surah_number": 1,
+    "start_verse": 1,
+    "end_surah_number": 1,
+    "end_verse": 7,
+    "recitation_type": "حفظ",
+    "duration_minutes": 30,
+    "grade": 8.5,
+    "evaluation": "جيد جدا",
+    "status": "مكتملة",
+    "teacher_notes": "PowerShell test with JSON file",
+    "has_errors": false,
+    "total_verses": 7
+}

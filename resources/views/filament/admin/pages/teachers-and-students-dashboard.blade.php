@@ -1,10 +1,11 @@
 <x-filament-panels::page>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <!-- قسم الإحصائيات العامة للمعلمين والطلاب -->
-        <x-filament::section>
-            <x-slot name="heading">
-                إحصائيات عامة للمعلمين والطلاب
-            </x-slot>
+    <div class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- قسم الإحصائيات العامة للمعلمين والطلاب -->
+            <x-filament::section>
+                <x-slot name="heading">
+                    إحصائيات عامة للمعلمين والطلاب
+                </x-slot>
             
             <div class="grid grid-cols-2 gap-4">
                 <x-filament::card>
@@ -85,8 +86,7 @@
                     </div>
                 </div>
             </div>
-            
-            <script>
+              <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const attendanceRate = {{ $attendanceRate }};
                     
@@ -113,13 +113,12 @@
                         stroke: {
                             lineCap: 'round'
                         },
-                    }).render();
-                });
+                    }).render();                });
             </script>
         </x-filament::section>
-    </div>
+        </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <!-- قسم توزيع الطلاب حسب العمر -->
         <x-filament::section>
             <x-slot name="heading">
@@ -380,17 +379,20 @@
                 
                 <a href="#" class="block p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-50 transition">
                     <h5 class="mb-2 text-lg font-bold text-danger-600">تقييمات الطلاب</h5>
-                    <p class="text-sm text-gray-600">استعراض وإدارة تقييمات الطلاب والاختبارات</p>
-                </a>
+                    <p class="text-sm text-gray-600">استعراض وإدارة تقييمات الطلاب والاختبارات</p>                </a>
             </div>
         </x-filament::section>
-    </div>
+        </div>
 
-    <div class="grid grid-cols-1 gap-4 mb-6 mt-6">
-        <!-- قسم توزيع المعلمين حسب المساجد -->
-        @livewire('widget-teachers-by-mosque')
-    </div>
+        <div class="grid grid-cols-1 gap-4 mb-6 mt-6">
+            <!-- قسم توزيع المعلمين حسب المساجد -->
+            <x-filament-widgets::widgets 
+                :widgets="$this->getWidgets()" 
+                :columns="1" 
+            />
+        </div>
 
-    <!-- تحميل مكتبة ApexCharts للرسوم البيانية -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <!-- تحميل مكتبة ApexCharts للرسوم البيانية -->
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    </div>
 </x-filament-panels::page>

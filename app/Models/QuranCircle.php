@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class QuranCircle extends Model
 {
@@ -81,6 +82,99 @@ class QuranCircle extends Model
     public function getIsIndividualAttribute(): bool
     {
         return $this->circle_type === 'حلقة فردية';
+    }
+
+    /**
+     * الحلقات الفرعية التابعة للمدرسة القرآنية (إذا كانت حلقة جماعية)
+     */
+    public function circleGroups(): HasMany
+    {
+        return $this->hasMany(CircleGroup::class);
+    }
+    
+    /**
+     * تحقق ما إذا كانت الحلقة جماعية (مدرسة قرآنية)
+     */
+    public function getIsGroupCircleAttribute(): bool
+    {
+        return $this->circle_type === 'حلقة جماعية';
+    }
+    
+    /**
+     * المعلمون المرتبطون بهذه الحلقة (العلاقة القديمة - يُحتفظ بها للتوافق مع النسخ السابقة)
+     */
+    public function teachers(): HasMany
+    {
+        return $this->hasMany(Teacher::class);
+    }
+
+    /**
+     * تكليفات المعلمين لهذه الحلقة
+     */
+    public function teacherAssignments(): HasMany
+    {
+        return $this->hasMany(TeacherCircleAssignment::class);
+    }
+
+    /**
+     * تكليفات المعلمين النشطة لهذه الحلقة
+     */
+    public function activeTeacherAssignments(): HasMany
+    {
+        return $this->teacherAssignments()->active();
+    }
+
+    /**
+     * المعلمون النشطون في هذه الحلقة (العلاقة الجديدة many-to-many)
+     */
+    public function activeTeachers(): BelongsToMany
+    {
+        return $this->belongsToMany(Teacher::class, 'teacher_circle_assignments', 'quran_circle_id', 'teacher_id')
+            ->withPivot(['is_active', 'start_date', 'end_date', 'notes'])
+            ->wherePivot('is_active', true)
+            ->withTimestamps();
+    }
+
+    /**
+     * جميع المعلمين المرتبطين بهذه الحلقة (نشطون وغير نشطين)
+     */
+    public function allTeachers(): BelongsToMany
+    {
+        return $this->belongsToMany(Teacher::class, 'teacher_circle_assignments', 'quran_circle_id', 'teacher_id')
+            ->withPivot(['is_active', 'start_date', 'end_date', 'notes'])
+            ->withTimestamps();
+    }
+
+    /**
+     * المعلم الأساسي للحلقة (أول معلم نشط)
+     */
+    public function primaryTeacher()
+    {
+        return $this->activeTeachers()->orderBy('teacher_circle_assignments.start_date')->first();
+    }
+
+    /**
+     * التحقق من وجود معلم نشط في الحلقة
+     */
+    public function hasActiveTeacher(): bool
+    {
+        return $this->activeTeachers()->exists();
+    }
+
+    /**
+     * عدد المعلمين النشطين في الحلقة
+     */
+    public function getActiveTeachersCountAttribute(): int
+    {
+        return $this->activeTeachers()->count();
+    }
+
+    /**
+     * الطلاب المرتبطون بهذه الحلقة
+     */
+    public function students(): HasMany
+    {
+        return $this->hasMany(Student::class);
     }
 
     /**
@@ -223,7 +317,9 @@ class QuranCircle extends Model
      */
     protected $appends = [
         'is_individual',
+        'is_group_circle',
         'last_supervisor_visit',
         'average_rating',
+        'active_teachers_count',
     ];
 }

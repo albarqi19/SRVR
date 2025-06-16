@@ -1,0 +1,35 @@
+{
+    "session_id": "RS-20250609-072505-0001",
+    "errors": [
+        {
+            "surah_number": 2,
+            "verse_number": 5,
+            "word_text": "الذين",
+            "error_type": "تجويد",
+            "correction_note": "عدم تطبيق القلقلة بشكل صحيح",
+            "teacher_note": "يحتاج تدريب على أحكام القلقلة",
+            "is_repeated": false,
+            "severity_level": "متوسط"
+        },
+        {
+            "surah_number": 2,
+            "verse_number": 7,
+            "word_text": "ختم",
+            "error_type": "نطق",
+            "correction_note": "نطق الخاء غير واضح",
+            "teacher_note": "تدريب على مخارج الحروف",
+            "is_repeated": true,
+            "severity_level": "خفيف"
+        },
+        {
+            "surah_number": 2,
+            "verse_number": 10,
+            "word_text": "يخادعون",
+            "error_type": "ترتيل",
+            "correction_note": "سرعة في القراءة",
+            "teacher_note": "التزام بقواعد الترتيل",
+            "is_repeated": false,
+            "severity_level": "شديد"
+        }
+    ]
+}

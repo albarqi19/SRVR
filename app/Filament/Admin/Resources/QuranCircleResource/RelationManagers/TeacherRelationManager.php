@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TeacherRelationManager extends RelationManager
 {
-    protected static string $relationship = 'teacher';
-    protected static ?string $title = 'معلم الحلقة';
+    protected static string $relationship = 'activeTeachers';
+    protected static ?string $title = 'معلمين الحلقة';
     protected static ?string $label = 'معلم';
     protected static ?string $pluralLabel = 'المعلمين';
 

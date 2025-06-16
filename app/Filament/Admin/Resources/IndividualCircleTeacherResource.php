@@ -30,6 +30,22 @@ class IndividualCircleTeacherResource extends Resource
     
     // ترتيب المورد في القائمة
     protected static ?int $navigationSort = 3;
+    
+    /**
+     * إظهار عدد العناصر في مربع العدد (Badge) في القائمة
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    /**
+     * تحديد لون مربع العدد (Badge) في القائمة
+     */
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'info'; // اللون الأزرق الفاتح للحلقات الفردية
+    }
 
     public static function form(Form $form): Form
     {

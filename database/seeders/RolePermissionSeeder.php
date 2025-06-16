@@ -58,7 +58,7 @@ class RolePermissionSeeder extends Seeder
                 // محدودة على المساجد
                 'view_mosques',
                 // محدودة على الطلاب
-                'view_students', 'view_student_progress',
+                'view_students', 'view_student_progress', 'transfer_students', 'view_student_transfer_requests',
                 // محدودة على المعلمين
                 'view_teachers', 'view_teacher_performance',
                 // محدودة على الحضور

@@ -1,4 +1,4 @@
-<x-filament-panels::page.simple class="bg-cover bg-center" style="background-image: url('{{ asset('images/خلفية.jpg') }}');">
+<x-filament-panels::page.simple class="bg-cover bg-center" style="background-image: url('{{ asset('images/خلفية.png') }}');">
     <div class="bg-white dark:bg-gray-900 bg-opacity-90 dark:bg-opacity-90 backdrop-blur-sm rounded-xl shadow-md p-8 max-w-2xl mx-auto">
         <div class="flex flex-col items-center justify-center">
             <!-- نموذج تسجيل الدخول -->

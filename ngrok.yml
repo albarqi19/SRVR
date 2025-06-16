@@ -1,0 +1,10 @@
+version: "2"
+tunnels:
+  laravel-app:
+    proto: http
+    addr: 8000
+    subdomain: inviting-pleasantly-barnacle
+  node-app:
+    proto: http
+    addr: 3000
+    subdomain: amusing-premium-jennet

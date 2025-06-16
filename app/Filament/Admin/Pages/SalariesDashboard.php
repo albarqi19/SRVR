@@ -2,8 +2,11 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Admin\Widgets\BonusesAndIncentivesWidget;
+use App\Filament\Admin\Widgets\SalariesDistributionByMosqueWidget;
+use App\Filament\Admin\Widgets\SalariesYearlyTrendWidget;
+use App\Filament\Admin\Widgets\TotalMonthlySalariesWidget;
 use Filament\Pages\Page;
-use Filament\Support\Facades\FilamentView;
 use Illuminate\Contracts\Support\Htmlable;
 
 class SalariesDashboard extends Page
@@ -23,5 +26,23 @@ class SalariesDashboard extends Page
     public function getHeading(): string|Htmlable
     {
         return 'لوحة معلومات الرواتب والمالية';
+    }
+
+    public function getHeaderWidgets(): array
+    {
+        return [
+            TotalMonthlySalariesWidget::class,
+            SalariesDistributionByMosqueWidget::class,
+            SalariesYearlyTrendWidget::class,
+            BonusesAndIncentivesWidget::class,
+        ];
+    }
+
+    public function getHeaderWidgetsColumns(): int|string|array
+    {
+        return [
+            'md' => 2,
+            'xl' => 3,
+        ];
     }
 }

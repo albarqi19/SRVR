@@ -7,9 +7,14 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "awcodes/filament-table-repeater": "^3.1",
+        "doctrine/dbal": "^4.2",
         "filament/filament": "3.3",
         "filament/spatie-laravel-translatable-plugin": "^3.3",
+        "filament/tables": "^3.3",
+        "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^12.0",
+        "laravel/sanctum": "*",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.6",
         "spatie/laravel-permission": "^6.17"

@@ -1,0 +1,16 @@
+{
+  "student_id": 1,
+  "teacher_id": 1,
+  "quran_circle_id": 1,
+  "curriculum_id": 1,
+  "start_surah_number": 1,
+  "start_verse": 1,
+  "end_surah_number": 1,
+  "end_verse": 7,
+  "recitation_type": "memorization",
+  "duration_minutes": 15,
+  "grade": 8.5,
+  "evaluation": "excellent",
+  "teacher_notes": "Good performance",
+  "status": "completed"
+}

@@ -6,6 +6,7 @@ use App\Filament\Admin\Widgets\TeachersByMosqueWidget;
 use Filament\Pages\Page;
 use App\Models\Teacher;
 use App\Models\Student;
+use App\Models\TeacherEvaluation;
 use Illuminate\Support\Facades\Schema;
 
 class TeachersAndStudentsDashboard extends Page

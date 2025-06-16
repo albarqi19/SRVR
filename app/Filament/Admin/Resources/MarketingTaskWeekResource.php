@@ -130,8 +130,7 @@ class MarketingTaskWeekResource extends Resource
                 Tables\Columns\IconColumn::make('is_completed')
                     ->label('مكتمل')
                     ->boolean()
-                    ->sortable(),
-                Tables\Columns\ProgressColumn::make('completion_percentage')
+                    ->sortable(),                \App\Filament\Components\ProgressColumn::make('completion_percentage')
                     ->label('نسبة الإكمال')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')

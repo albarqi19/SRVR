@@ -1,0 +1,6 @@
+echo "=== فحص بنية جدول quran_circles ===";
+Schema::getColumnListing('quran_circles');
+echo "=== فحص أول حلقة ===";
+App\Models\QuranCircle::first();
+echo "=== فحص علاقة الطلاب ===";
+App\Models\Student::with('quranCircle')->first();

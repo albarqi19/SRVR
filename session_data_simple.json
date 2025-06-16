@@ -1,0 +1,15 @@
+{
+  "student_id": 1,
+  "teacher_id": 1,
+  "quran_circle_id": 1,
+  "session_date": "2024-01-15",
+  "start_surah_number": 1,
+  "end_surah_number": 1,
+  "start_verse": 1,
+  "end_verse": 7,
+  "recitation_type": "مراجعة صغرى",
+  "duration_minutes": 30,
+  "grade": 85,
+  "evaluation": "جيد جداً",
+  "teacher_notes": "Test session via cURL"
+}

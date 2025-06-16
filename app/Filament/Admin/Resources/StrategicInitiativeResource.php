@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use App\Filament\Components\ProgressColumn;
 
 class StrategicInitiativeResource extends Resource
 {
@@ -164,9 +165,7 @@ class StrategicInitiativeResource extends Resource
                     
                 Tables\Columns\TextColumn::make('responsibleUser.name')
                     ->label('المسؤول')
-                    ->sortable(),
-                    
-                Tables\Columns\ProgressColumn::make('completion_percentage')
+                    ->sortable(),                \App\Filament\Components\ProgressColumn::make('completion_percentage')
                     ->label('نسبة الإنجاز')
                     ->sortable(),
                     

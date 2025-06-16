@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار API - العلاقات</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .loading { color: #666; }
+        .error { color: red; }
+        .success { color: green; }
+        button { padding: 10px 20px; margin: 5px; background: #007cba; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #005a87; }
+        .student-card, .circle-card { background: #f9f9f9; margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .stats { display: flex; gap: 20px; }
+        .stat-item { background: #e7f3ff; padding: 10px; border-radius: 5px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 اختبار ربط المعلم بالحلقة والطلاب</h1>
+          <div class="section">
+            <h2>اختبار الـ API Endpoints</h2>
+            <button onclick="testTeacherCircles(1)">جلب حلقات المعلم رقم 1</button>
+            <button onclick="testTeacherCirclesDetailed(1)">جلب تفاصيل حلقات المعلم رقم 1</button>
+            <button onclick="testAllTeachers()">جلب جميع المعلمين</button>
+            <button onclick="clearResults()">مسح النتائج</button>
+        </div>
+
+        <div id="results" class="section">
+            <h3>النتائج:</h3>
+            <div id="output">انقر على أي زر لبدء الاختبار</div>
+        </div>
+
+        <div id="teacher-info" class="section" style="display: none;">
+            <h3>معلومات المعلم:</h3>
+            <div id="teacher-details"></div>
+        </div>
+
+        <div id="circles-info" class="section" style="display: none;">
+            <h3>حلقات المعلم:</h3>
+            <div id="circles-list"></div>
+        </div>
+
+        <div id="students-info" class="section" style="display: none;">
+            <h3>طلاب المعلم:</h3>
+            <div id="students-stats" class="stats"></div>
+            <div id="students-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+        
+        function clearResults() {
+            document.getElementById('output').innerHTML = '';
+            document.getElementById('teacher-info').style.display = 'none';
+            document.getElementById('circles-info').style.display = 'none';
+            document.getElementById('students-info').style.display = 'none';
+        }
+        
+        async function apiRequest(endpoint) {
+            try {
+                log(`📡 جاري الطلب: ${endpoint}`, 'info');
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`✅ نجح الطلب: ${endpoint}`, 'success');
+                return data;
+                
+            } catch (error) {
+                log(`❌ فشل الطلب: ${endpoint} - ${error.message}`, 'error');
+                throw error;
+            }
+        }
+        
+        async function testTeacherStudents(teacherId) {
+            try {
+                const data = await apiRequest(`/teachers/${teacherId}/students`);
+                log(`📊 تم جلب ${data.data?.الطلاب?.length || 0} طالب للمعلم ${teacherId}`, 'success');
+                
+                // عرض معلومات المعلم
+                if (data.data?.معلومات_المعلم) {
+                    const teacherInfo = data.data.معلومات_المعلم;
+                    document.getElementById('teacher-details').innerHTML = `
+                        <p><strong>الاسم:</strong> ${teacherInfo.الاسم}</p>
+                        <p><strong>المسجد:</strong> ${teacherInfo.المسجد}</p>
+                        <p><strong>عدد الحلقات:</strong> ${teacherInfo.عدد_الحلقات}</p>
+                        <p><strong>إجمالي الطلاب:</strong> ${teacherInfo.إجمالي_الطلاب}</p>
+                    `;
+                    document.getElementById('teacher-info').style.display = 'block';
+                }
+                
+                // عرض الإحصائيات
+                if (data.data?.إحصائيات) {
+                    const stats = data.data.إحصائيات;
+                    document.getElementById('students-stats').innerHTML = `
+                        <div class="stat-item">
+                            <h4>إجمالي الطلاب</h4>
+                            <p>${stats.إجمالي_الطلاب}</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>الطلاب النشطون</h4>
+                            <p>${stats.الطلاب_النشطون}</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>متوسط العمر</h4>
+                            <p>${stats.متوسط_العمر} سنة</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>الذكور</h4>
+                            <p>${stats.توزيع_الجنس?.ذكور || 0}</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>الإناث</h4>
+                            <p>${stats.توزيع_الجنس?.إناث || 0}</p>
+                        </div>
+                    `;
+                }
+                
+                // عرض قائمة الطلاب
+                if (data.data?.الطلاب) {
+                    const studentsList = data.data.الطلاب.map(student => `
+                        <div class="student-card">
+                            <h4>${student.الاسم} (${student.رقم_الطالب})</h4>
+                            <p><strong>الحلقة:</strong> ${student.الحلقة?.الاسم || 'غير محدد'}</p>
+                            <p><strong>المستوى:</strong> ${student.الحلقة?.المستوى || 'غير محدد'}</p>
+                            <p><strong>السورة الحالية:</strong> ${student.المنهج_الحالي?.السورة_الحالية || 'غير محدد'}</p>
+                            <p><strong>الصفحات المحفوظة:</strong> ${student.المنهج_الحالي?.الصفحات_المحفوظة || 0}</p>
+                            <p><strong>نسبة الحضور:</strong> ${student.إحصائيات_الحضور?.نسبة_الحضور || '0%'}</p>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('students-list').innerHTML = studentsList;
+                    document.getElementById('students-info').style.display = 'block';
+                }
+                
+            } catch (error) {
+                log(`خطأ في جلب طلاب المعلم: ${error.message}`, 'error');
+            }
+        }
+          async function testTeacherCircles(teacherId) {
+            try {
+                const data = await apiRequest(`/teachers/${teacherId}/circles`);
+                log(`📊 تم جلب حلقة المعلم ${teacherId}`, 'success');
+                console.log('حلقة المعلم:', data);
+                
+                // عرض معلومات المعلم
+                if (data.teacher) {
+                    const teacher = data.teacher;
+                    document.getElementById('teacher-details').innerHTML = `
+                        <p><strong>الاسم:</strong> ${teacher.name}</p>
+                        <p><strong>رقم الهوية:</strong> ${teacher.identity_number}</p>
+                        <p><strong>الهاتف:</strong> ${teacher.phone || 'غير محدد'}</p>
+                    `;
+                    document.getElementById('teacher-info').style.display = 'block';
+                }
+                
+                // عرض معلومات الحلقة
+                if (data.circle) {
+                    const circle = data.circle;
+                    const circleInfo = `
+                        <div class="circle-card">
+                            <h4>${circle.name}</h4>
+                            <p><strong>المعلم:</strong> ${circle.teacher?.name || 'غير محدد'}</p>
+                            <p><strong>عدد الطلاب:</strong> ${circle.students?.length || 0}</p>
+                            <details>
+                                <summary>قائمة الطلاب (${circle.students?.length || 0})</summary>
+                                ${circle.students?.map(student => `
+                                    <div class="student-card">
+                                        <p><strong>الاسم:</strong> ${student.name}</p>
+                                        <p><strong>العمر:</strong> ${student.age || 'غير محدد'}</p>
+                                        <p><strong>الهاتف:</strong> ${student.phone || 'غير محدد'}</p>
+                                    </div>
+                                `).join('') || '<p>لا يوجد طلاب</p>'}
+                            </details>
+                        </div>
+                    `;
+                    
+                    document.getElementById('circles-list').innerHTML = circleInfo;
+                    document.getElementById('circles-info').style.display = 'block';
+                }
+                  } catch (error) {
+                log(`خطأ في جلب حلقة المعلم: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testTeacherCirclesDetailed(teacherId) {
+            try {
+                const data = await apiRequest(`/teachers/${teacherId}/circles-detailed`);
+                log(`📊 تم جلب التفاصيل المفصلة لحلقات المعلم ${teacherId}`, 'success');
+                console.log('تفاصيل حلقات المعلم:', data);
+                
+                // عرض معلومات المعلم
+                if (data.teacher) {
+                    const teacher = data.teacher;
+                    document.getElementById('teacher-details').innerHTML = `
+                        <p><strong>الاسم:</strong> ${teacher.name}</p>
+                        <p><strong>رقم الهوية:</strong> ${teacher.identity_number}</p>
+                        <p><strong>الهاتف:</strong> ${teacher.phone || 'غير محدد'}</p>
+                    `;
+                    document.getElementById('teacher-info').style.display = 'block';
+                }
+                
+                // عرض الإحصائيات
+                if (data.statistics) {
+                    const stats = data.statistics;
+                    document.getElementById('students-stats').innerHTML = `
+                        <div class="stat-item">
+                            <h4>إجمالي الطلاب</h4>
+                            <p>${stats.total_students}</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>الذكور</h4>
+                            <p>${stats.male_students}</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>الإناث</h4>
+                            <p>${stats.female_students}</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>متوسط العمر</h4>
+                            <p>${stats.average_age} سنة</p>
+                        </div>
+                    `;
+                    document.getElementById('students-info').style.display = 'block';
+                }
+                
+                // عرض معلومات الحلقة مع الطلاب
+                if (data.circle) {
+                    const circle = data.circle;
+                    const studentsInfo = circle.students?.map(student => `
+                        <div class="student-card">
+                            <h4>${student.name}</h4>
+                            <p><strong>العمر:</strong> ${student.age || 'غير محدد'}</p>
+                            <p><strong>الجنس:</strong> ${student.gender || 'غير محدد'}</p>
+                            <p><strong>الهاتف:</strong> ${student.phone || 'غير محدد'}</p>
+                        </div>
+                    `).join('') || '<p>لا يوجد طلاب</p>';
+                    
+                    const circleInfo = `
+                        <div class="circle-card">
+                            <h4>${circle.name}</h4>
+                            <p><strong>المعلم:</strong> ${circle.teacher?.name || 'غير محدد'}</p>
+                            <p><strong>عدد الطلاب:</strong> ${circle.students?.length || 0}</p>
+                            <div style="margin-top: 15px;">
+                                <strong>قائمة الطلاب:</strong>
+                                ${studentsInfo}
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('circles-list').innerHTML = circleInfo;
+                    document.getElementById('circles-info').style.display = 'block';
+                }
+                
+            } catch (error) {
+                log(`خطأ في جلب التفاصيل المفصلة: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCircleDetails(circleId) {
+            try {
+                const data = await apiRequest(`/circles/${circleId}`);
+                log(`📊 تم جلب تفاصيل الحلقة ${circleId}`, 'success');
+                console.log('تفاصيل الحلقة:', data);
+                
+            } catch (error) {
+                log(`خطأ في جلب تفاصيل الحلقة: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAllTeachers() {
+            try {
+                const data = await apiRequest('/teachers');
+                log(`📊 تم جلب ${data.البيانات?.length || 0} معلم`, 'success');
+                console.log('جميع المعلمين:', data);
+                
+            } catch (error) {
+                log(`خطأ في جلب المعلمين: ${error.message}`, 'error');
+            }
+        }
+        
+        // تشغيل اختبار تلقائي عند تحميل الصفحة
+        window.onload = function() {
+            log('🚀 تم تحميل صفحة اختبار API', 'success');
+            log('تأكد من تشغيل الخادم على: http://127.0.0.1:8000', 'info');
+        };
+    </script>
+</body>
+</html>

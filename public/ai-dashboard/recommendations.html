@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توصيات الذكاء الاصطناعي - نظام غرب</title>    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Font: IBM Plex Sans Arabic -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="ai-dashboard.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">            <div class="logo-container">
+                <img src="غرب (5).png" alt="شعار غرب" class="logo">
+                <div class="logo-text">
+                    <h1>مشروع غرب</h1>
+                    <p>نظام إدارة مراكز تحفيظ القرآن الكريم المدعوم بالذكاء الاصطناعي</p>
+                </div>
+            </div>
+            <div class="search-notification">
+                <div class="search-bar">
+                    <input type="text" placeholder="بحث...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+                <div class="notifications">
+                    <div class="notification-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="user-profile">
+                        <img src="https://via.placeholder.com/40x40.png?text=مدير" alt="صورة المستخدم">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar">
+        <div class="sidebar-menu">
+            <div class="menu-item" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </div>
+            <div class="menu-item active" onclick="window.location.href='recommendations.html'">
+                <i class="fas fa-lightbulb"></i>
+                <span>توصيات الذكاء الاصطناعي</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-brain"></i>
+                <span>الذكاء الاصطناعي</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-book-quran"></i>
+                <span>التحفيظ</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>المعلمين</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-user-graduate"></i>
+                <span>الطلاب</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>التقارير</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>الإعدادات</span>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <div class="welcome-section">
+            <h2>توصيات الذكاء الاصطناعي</h2>
+            <p class="date">اليوم: <span id="current-date">15 مايو 2025</span></p>
+        </div>
+
+        <div class="dashboard-section recommendations-overview">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-pie"></i> نظرة عامة على التوصيات</h2>
+                <div class="filter-options">
+                    <select id="recommendation-filter">
+                        <option value="all" selected>جميع التوصيات</option>
+                        <option value="student">توصيات الطلاب</option>
+                        <option value="teacher">توصيات المعلمين</option>
+                        <option value="admin">توصيات الإدارية</option>
+                        <option value="financial">توصيات مالية</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="recommendation-stats">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>42</h3>
+                    <p>توصية نشطة</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>28</h3>
+                    <p>توصية مطبقة</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <h3>15</h3>
+                    <p>قيد المراجعة</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>87%</h3>
+                    <p>معدل نجاح التوصيات</p>
+                </div>
+            </div>
+
+            <div class="chart-container recommendation-charts">
+                <div class="chart-panel">
+                    <h3>توزيع التوصيات حسب النوع</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="recommendations-by-type"></canvas>
+                    </div>
+                </div>
+                <div class="chart-panel">
+                    <h3>معدل تطبيق التوصيات</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="recommendation-adoption-rate"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2><i class="fas fa-user-graduate"></i> توصيات خاصة بالطلاب</h2>
+                <button class="action-button">
+                    <i class="fas fa-file-export"></i>
+                    تصدير التقرير
+                </button>
+            </div>
+
+            <div class="student-recommendations">
+                <div class="recommendation-item detailed">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <div class="recommendation-title">
+                            <h4>خطة حفظ مخصصة للطالب عمر خالد</h4>
+                            <div class="recommendation-meta">
+                                <span class="priority high">أولوية عالية</span>
+                                <span class="date">10 مايو 2025</span>
+                            </div>
+                        </div>
+                        <div class="recommendation-status pending">
+                            قيد المراجعة
+                        </div>
+                    </div>
+                    <div class="recommendation-body">
+                        <p>يواجه الطالب صعوبة في حفظ سورة المائدة. اقترح الذكاء الاصطناعي خطة حفظ مخصصة تراعي نمط التعلم البصري للطالب مع زيادة فترات المراجعة. توقع النظام تحسن في الأداء بنسبة 40% خلال 3 أسابيع.</p>
+                        
+                        <div class="recommendation-details">
+                            <div class="detail-item">
+                                <span class="detail-label">نمط التعلم المكتشف:</span>
+                                <span class="detail-value">بصري (75%)</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">معدل الحفظ الحالي:</span>
+                                <span class="detail-value">3 صفحات أسبوعيًا</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">معدل الحفظ المتوقع:</span>
+                                <span class="detail-value">5 صفحات أسبوعيًا</span>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-chart">
+                            <canvas id="student-omar-progress"></canvas>
+                        </div>
+
+                        <div class="recommendation-actions">
+                            <button class="action-button">تطبيق التوصية</button>
+                            <button class="action-button secondary">تعديل الخطة</button>
+                            <button class="action-button tertiary">تجاهل</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recommendation-item detailed">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="recommendation-title">
+                            <h4>إعادة توزيع الطلاب على الحلقات</h4>
+                            <div class="recommendation-meta">
+                                <span class="priority medium">أولوية متوسطة</span>
+                                <span class="date">12 مايو 2025</span>
+                            </div>
+                        </div>
+                        <div class="recommendation-status new">
+                            جديدة
+                        </div>
+                    </div>
+                    <div class="recommendation-body">
+                        <p>حدد النظام عدم التوازن في توزيع الطلاب على الحلقات المسائية مما يؤثر على جودة التعليم. اقتراح إعادة توزيع 12 طالبًا على 4 حلقات لتحقيق التوازن الأمثل مع مراعاة مستوى الطلاب ومهارات المعلمين.</p>
+                        
+                        <div class="recommendation-details">
+                            <div class="detail-item">
+                                <span class="detail-label">الحلقات المتأثرة:</span>
+                                <span class="detail-value">4 حلقات</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">الطلاب المقترح نقلهم:</span>
+                                <span class="detail-value">12 طالب</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">التحسن المتوقع في الأداء:</span>
+                                <span class="detail-value">25%</span>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-chart">
+                            <canvas id="groups-redistribution"></canvas>
+                        </div>
+
+                        <div class="recommendation-actions">
+                            <button class="action-button">عرض خطة إعادة التوزيع</button>
+                            <button class="action-button secondary">تطبيق جزئي</button>
+                            <button class="action-button tertiary">تجاهل</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recommendation-item detailed">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="recommendation-title">
+                            <h4>طلاب مؤهلين للاختبار النهائي</h4>
+                            <div class="recommendation-meta">
+                                <span class="priority high">أولوية عالية</span>
+                                <span class="date">15 مايو 2025</span>
+                            </div>
+                        </div>
+                        <div class="recommendation-status new">
+                            جديدة
+                        </div>
+                    </div>
+                    <div class="recommendation-body">
+                        <p>اكتشف النظام 5 طلاب يتمتعون بجاهزية عالية للتقدم لاختبار إتمام حفظ القرآن الكريم. يقترح النظام برنامج مراجعة مكثف لمدة أسبوعين قبل الاختبار لرفع فرص النجاح.</p>
+                        
+                        <div class="recommendation-student-list">
+                            <div class="student-card">
+                                <img src="https://via.placeholder.com/60x60.png?text=طالب" alt="صورة الطالب">
+                                <div class="student-info">
+                                    <h5>محمد أحمد</h5>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 97%;"></div>
+                                    </div>
+                                    <span>جاهزية 97%</span>
+                                </div>
+                            </div>
+                            <div class="student-card">
+                                <img src="https://via.placeholder.com/60x60.png?text=طالب" alt="صورة الطالب">
+                                <div class="student-info">
+                                    <h5>عبد الرحمن خالد</h5>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 95%;"></div>
+                                    </div>
+                                    <span>جاهزية 95%</span>
+                                </div>
+                            </div>
+                            <div class="student-card">
+                                <img src="https://via.placeholder.com/60x60.png?text=طالب" alt="صورة الطالب">
+                                <div class="student-info">
+                                    <h5>عمر فهد</h5>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 93%;"></div>
+                                    </div>
+                                    <span>جاهزية 93%</span>
+                                </div>
+                            </div>
+                            <div class="student-card">
+                                <img src="https://via.placeholder.com/60x60.png?text=طالب" alt="صورة الطالب">
+                                <div class="student-info">
+                                    <h5>سعود عبد الله</h5>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 92%;"></div>
+                                    </div>
+                                    <span>جاهزية 92%</span>
+                                </div>
+                            </div>
+                            <div class="student-card">
+                                <img src="https://via.placeholder.com/60x60.png?text=طالب" alt="صورة الطالب">
+                                <div class="student-info">
+                                    <h5>يوسف سامي</h5>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 90%;"></div>
+                                    </div>
+                                    <span>جاهزية 90%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-actions">
+                            <button class="action-button">جدولة الاختبارات</button>
+                            <button class="action-button secondary">إعداد برنامج المراجعة</button>
+                            <button class="action-button tertiary">عرض التفاصيل</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2><i class="fas fa-chalkboard-teacher"></i> توصيات خاصة بالمعلمين</h2>
+                <div class="tabs">
+                    <div class="tab active" data-tab="teacher-recommendations">التوصيات</div>
+                    <div class="tab" data-tab="teacher-predictions">التنبؤات</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="teacher-recommendations">
+                <div class="recommendation-item detailed">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="recommendation-title">
+                            <h4>ترشيح معلمين للدورات التدريبية</h4>
+                            <div class="recommendation-meta">
+                                <span class="priority medium">أولوية متوسطة</span>
+                                <span class="date">9 مايو 2025</span>
+                            </div>
+                        </div>
+                        <div class="recommendation-status applied">
+                            مطبقة
+                        </div>
+                    </div>
+                    <div class="recommendation-body">
+                        <p>بناءً على تحليل أداء المعلمين، حدد النظام 6 معلمين يمكنهم الاستفادة من دورات متقدمة في تعليم التجويد وأساليب التدريس الحديثة. تشير التحليلات إلى إمكانية تحسين أداء الطلاب بنسبة 30% بعد تطوير مهارات المعلمين.</p>
+                        
+                        <div class="teacher-skills-chart">
+                            <canvas id="teacher-skills"></canvas>
+                        </div>
+
+                        <div class="recommendation-actions">
+                            <button class="action-button">عرض خطة التدريب</button>
+                            <button class="action-button secondary">تقرير المتابعة</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recommendation-item detailed">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="recommendation-title">
+                            <h4>تحسين جدول المعلمين</h4>
+                            <div class="recommendation-meta">
+                                <span class="priority high">أولوية عالية</span>
+                                <span class="date">11 مايو 2025</span>
+                            </div>
+                        </div>
+                        <div class="recommendation-status pending">
+                            قيد المراجعة
+                        </div>
+                    </div>
+                    <div class="recommendation-body">
+                        <p>اكتشف النظام تداخلات وعدم توازن في جدول المعلمين يؤدي إلى إجهاد بعض المعلمين وعدم الاستفادة الكاملة من مهارات البعض الآخر. تقترح خوارزمية الجدولة الذكية توزيعًا جديدًا يحسن الكفاءة بنسبة 22%.</p>
+                        
+                        <div class="recommendation-chart double-chart">
+                            <div class="chart-container">
+                                <h5>التوزيع الحالي</h5>
+                                <canvas id="current-schedule"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <h5>التوزيع المقترح</h5>
+                                <canvas id="proposed-schedule"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-actions">
+                            <button class="action-button">تطبيق الجدول الجديد</button>
+                            <button class="action-button secondary">تعديل الاقتراح</button>
+                            <button class="action-button tertiary">تجاهل</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="teacher-predictions">
+                <div class="prediction-container">
+                    <div class="prediction-header">
+                        <h3>تنبؤات أداء المعلمين للربع القادم</h3>
+                        <p>تحليل تنبؤي بناءً على بيانات الأداء السابقة والمؤشرات الحالية</p>
+                    </div>
+
+                    <div class="prediction-chart-container">
+                        <canvas id="teacher-performance-prediction"></canvas>
+                    </div>
+
+                    <div class="prediction-insights">
+                        <div class="insight-card">
+                            <div class="insight-icon green">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h4>تحسن متوقع</h4>
+                                <p>7 معلمين متوقع أن يتحسن أداؤهم بنسبة 15% أو أكثر</p>
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-icon red">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h4>تراجع محتمل</h4>
+                                <p>3 معلمين معرضين لتراجع الأداء بنسبة 10% أو أكثر</p>
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-icon blue">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h4>معلمين متميزين</h4>
+                                <p>5 معلمين مرشحين للتكريم بناءً على الأداء المتوقع</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2><i class="fas fa-coins"></i> توصيات مالية وإدارية</h2>
+            </div>
+
+            <div class="financial-recommendations">
+                <div class="recommendation-item financial">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="recommendation-title">
+                            <h4>إعادة توزيع الميزانية</h4>
+                            <div class="recommendation-meta">
+                                <span class="priority high">أولوية عالية</span>
+                                <span class="date">8 مايو 2025</span>
+                            </div>
+                        </div>
+                        <div class="recommendation-impact positive">
+                            <i class="fas fa-arrow-up"></i>
+                            توفير 15%
+                        </div>
+                    </div>
+                    <div class="recommendation-body">
+                        <p>اكتشف نظام الذكاء الاصطناعي فرصًا لإعادة توزيع الميزانية بطريقة أكثر كفاءة، مع توقع توفير 15% من الميزانية السنوية دون التأثير على جودة الخدمات المقدمة.</p>
+                        
+                        <div class="budget-chart">
+                            <canvas id="budget-optimization"></canvas>
+                        </div>
+
+                        <div class="savings-details">
+                            <div class="saving-item">
+                                <div class="saving-category">تكنولوجيا المعلومات</div>
+                                <div class="saving-value">35,000 ريال</div>
+                            </div>
+                            <div class="saving-item">
+                                <div class="saving-category">المواد التعليمية</div>
+                                <div class="saving-value">22,500 ريال</div>
+                            </div>
+                            <div class="saving-item">
+                                <div class="saving-category">المصاريف الإدارية</div>
+                                <div class="saving-value">18,200 ريال</div>
+                            </div>
+                            <div class="saving-item highlight">
+                                <div class="saving-category">إجمالي التوفير</div>
+                                <div class="saving-value">75,700 ريال</div>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-actions">
+                            <button class="action-button">تطبيق خطة التوفير</button>
+                            <button class="action-button secondary">تحليل تفصيلي</button>
+                            <button class="action-button tertiary">تعديل الاقتراح</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recommendation-item financial">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </div>
+                        <div class="recommendation-title">
+                            <h4>استهداف المانحين المحتملين</h4>
+                            <div class="recommendation-meta">
+                                <span class="priority medium">أولوية متوسطة</span>
+                                <span class="date">14 مايو 2025</span>
+                            </div>
+                        </div>
+                        <div class="recommendation-impact positive">
+                            <i class="fas fa-arrow-up"></i>
+                            زيادة 20%
+                        </div>
+                    </div>
+                    <div class="recommendation-body">
+                        <p>حدد نظام الذكاء الاصطناعي 35 مانحًا محتملًا بناءً على تحليل بيانات التبرعات السابقة والنشاط الاجتماعي. يتوقع النظام زيادة بنسبة 20% في التبرعات عند استهدافهم بالطريقة المناسبة.</p>
+                        
+                        <div class="donor-map">
+                            <h5>خريطة توزيع المانحين المحتملين</h5>
+                            <img src="https://via.placeholder.com/800x400.png?text=خريطة+توزيع+المانحين" alt="خريطة المانحين المحتملين">
+                        </div>
+
+                        <div class="donor-stats">
+                            <div class="donor-group">
+                                <div class="donor-group-title">رجال أعمال</div>
+                                <div class="donor-group-count">15</div>
+                                <div class="donor-group-potential">220,000 ريال</div>
+                            </div>
+                            <div class="donor-group">
+                                <div class="donor-group-title">شركات</div>
+                                <div class="donor-group-count">8</div>
+                                <div class="donor-group-potential">350,000 ريال</div>
+                            </div>
+                            <div class="donor-group">
+                                <div class="donor-group-title">مؤسسات خيرية</div>
+                                <div class="donor-group-count">5</div>
+                                <div class="donor-group-potential">180,000 ريال</div>
+                            </div>
+                            <div class="donor-group">
+                                <div class="donor-group-title">أفراد</div>
+                                <div class="donor-group-count">7</div>
+                                <div class="donor-group-potential">85,000 ريال</div>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-actions">
+                            <button class="action-button">إنشاء حملة استهداف</button>
+                            <button class="action-button secondary">قائمة المانحين</button>
+                            <button class="action-button tertiary">تحليل الفرص</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>© 2025 مشروع غَرِب - نظام إدارة مراكز تحفيظ القرآن الكريم</p>
+            <p>تم تطويره باستخدام تقنيات الذكاء الاصطناعي المتقدمة</p>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="recommendations.js"></script>
+</body>
+</html>

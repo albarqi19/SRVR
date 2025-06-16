@@ -145,4 +145,20 @@ class NonAttendanceDayResource extends Resource
             'edit' => Pages\EditNonAttendanceDay::route('/{record}/edit'),
         ];
     }
+
+    /**
+     * إظهار عدد أيام الغياب في مربع العدد (Badge) في القائمة
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+    
+    /**
+     * تحديد لون مربع العدد (Badge) في القائمة
+     */
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
 }
