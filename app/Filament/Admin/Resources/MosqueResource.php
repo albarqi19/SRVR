@@ -25,10 +25,10 @@ class MosqueResource extends Resource
     protected static ?string $pluralLabel = 'المساجد';
     
     // وضع المورد في مجموعة التنقل المناسبة
-    protected static ?string $navigationGroup = 'التعليمية';
+    protected static ?string $navigationGroup = 'إدارة المساجد والحلقات';
     
     // ترتيب المورد في القائمة
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 11;
     
     /**
      * إظهار عدد العناصر في مربع العدد (Badge) في القائمة

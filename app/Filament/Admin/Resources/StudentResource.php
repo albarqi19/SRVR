@@ -27,12 +27,11 @@ class StudentResource extends Resource
     // إضافة الترجمات العربية
     protected static ?string $modelLabel = 'طالب';
     protected static ?string $pluralModelLabel = 'الطلاب';
-    
-    // تعيين مجموعة التنقل في القائمة
-    protected static ?string $navigationGroup = 'التعليمية';
+      // تعيين مجموعة التنقل في القائمة
+    protected static ?string $navigationGroup = 'إدارة الطلاب والمعلمين';
     
     // ترتيب ظهور المورد في القائمة
-    protected static ?int $navigationSort = 15;
+    protected static ?int $navigationSort = 21;
 
     public static function form(Form $form): Form
     {

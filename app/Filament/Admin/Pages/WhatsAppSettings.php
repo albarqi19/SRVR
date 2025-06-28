@@ -36,10 +36,12 @@ class WhatsAppSettings extends Page implements HasForms
     protected static string $view = 'filament.admin.pages.whats-app-settings';
 
     public ?array $data = [];
+    
+    protected $listeners = ['refresh' => '$refresh'];
 
     public function mount(): void
     {
-        $this->form->fill($this->getSettingsData());
+        $this->data = $this->getSettingsData();
     }
 
     public function form(Form $form): Form
@@ -96,9 +98,9 @@ class WhatsAppSettings extends Page implements HasForms
                     ->schema([
                         TextInput::make('api_url')
                             ->label('رابط API')
-                            ->url()
                             ->required()
-                            ->helperText('رابط خدمة WhatsApp API'),
+                            ->helperText('رابط خدمة WhatsApp API (يمكن استخدام localhost للاختبار)')
+                            ->placeholder('مثال: http://localhost:3000/api/webhook/token'),
                             
                         TextInput::make('api_token')
                             ->label('رمز API')
@@ -188,9 +190,10 @@ class WhatsAppSettings extends Page implements HasForms
     public function save(): void
     {
         try {
-            $data = $this->form->getState();
+            $state = $this->form->getState();
+            $this->data = array_merge($this->data, $state);
             
-            foreach ($data as $key => $value) {
+            foreach ($this->data as $key => $value) {
                 if ($key === 'test_phone_number' || $key === 'test_message') {
                     continue; // تجاهل حقول الاختبار
                 }
@@ -296,13 +299,22 @@ class WhatsAppSettings extends Page implements HasForms
 
     public function resetToDefaults(): void
     {
-        $this->form->fill($this->getDefaultSettings());
-        
-        Notification::make()
-            ->title('تم إعادة التعيين')
-            ->body('تم إعادة تعيين الإعدادات إلى القيم الافتراضية')
-            ->success()
-            ->send();
+        try {
+            $this->data = $this->getDefaultSettings();
+            $this->form->fill($this->data);
+            
+            Notification::make()
+                ->title('تم إعادة التعيين')
+                ->body('تم إعادة تعيين الإعدادات إلى القيم الافتراضية')
+                ->success()
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('خطأ في إعادة التعيين')
+                ->body('حدث خطأ: ' . $e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 
     protected function getSettingsData(): array

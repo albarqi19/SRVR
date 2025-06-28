@@ -23,12 +23,11 @@ class CurriculumResource extends Resource
     // إضافة الترجمات العربية
     protected static ?string $modelLabel = 'منهج تعليمي';
     protected static ?string $pluralModelLabel = 'المناهج التعليمية';
-    
-    // تعيين مجموعة التنقل في القائمة
-    protected static ?string $navigationGroup = 'التعليمية';
+      // تعيين مجموعة التنقل في القائمة
+    protected static ?string $navigationGroup = 'المناهج والخطط الدراسية';
     
     // ترتيب ظهور المورد في القائمة
-    protected static ?int $navigationSort = 25;
+    protected static ?int $navigationSort = 31;
 
     public static function form(Form $form): Form
     {

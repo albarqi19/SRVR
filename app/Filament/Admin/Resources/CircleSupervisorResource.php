@@ -27,10 +27,10 @@ class CircleSupervisorResource extends Resource
     protected static ?string $pluralModelLabel = 'مشرفي الحلقات';
     
     // تعيين مجموعة التنقل في القائمة
-    protected static ?string $navigationGroup = 'التعليمية';
+    protected static ?string $navigationGroup = 'إدارة المساجد والحلقات';
     
     // ترتيب ظهور المورد في القائمة
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 14;
     
     /**
      * إظهار عدد العناصر في مربع العدد (Badge) في القائمة

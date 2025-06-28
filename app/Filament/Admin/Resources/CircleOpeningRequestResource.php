@@ -24,9 +24,8 @@ class CircleOpeningRequestResource extends Resource
     // تخصيص المورد بالعربية
     protected static ?string $navigationIcon = 'heroicon-o-plus-circle';
     protected static ?string $label = 'طلب فتح حلقة';
-    protected static ?string $pluralLabel = 'طلبات فتح الحلقات';
-    protected static ?string $navigationGroup = 'طلبات الخدمة';
-    protected static ?int $navigationSort = 1;
+    protected static ?string $pluralLabel = 'طلبات فتح الحلقات';    protected static ?string $navigationGroup = 'إدارة المساجد والحلقات';
+    protected static ?int $navigationSort = 13;
 
     public static function form(Form $form): Form
     {

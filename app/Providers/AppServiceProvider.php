@@ -34,5 +34,12 @@ class AppServiceProvider extends ServiceProvider
         
         // تسجيل Observer للحضور لإرسال إشعارات WhatsApp
         \App\Models\Attendance::observe(\App\Observers\AttendanceObserver::class);
+        
+        // تسجيل command إدارة رسائل WhatsApp
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \App\Console\Commands\ManageWhatsAppQueue::class,
+            ]);
+        }
     }
 }

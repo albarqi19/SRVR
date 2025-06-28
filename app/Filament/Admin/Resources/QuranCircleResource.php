@@ -24,12 +24,11 @@ class QuranCircleResource extends Resource
     // تعيين العنوان بالعربية
     protected static ?string $label = 'مدرسة قرآنية';
     protected static ?string $pluralLabel = 'المدارس القرآنية';
-    
-    // وضع المورد في مجموعة التنقل المناسبة
-    protected static ?string $navigationGroup = 'التعليمية';
+      // وضع المورد في مجموعة التنقل المناسبة
+    protected static ?string $navigationGroup = 'إدارة المساجد والحلقات';
     
     // ترتيب المورد في القائمة
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 12;
 
     public static function form(Form $form): Form
     {

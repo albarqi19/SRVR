@@ -1110,9 +1110,7 @@ class TeacherController extends Controller
 
                     foreach ($mainCircleStudents as $student) {
                         $allStudents->push($this->formatStudentData($student, 'أساسي', $teacher, $mosque));
-                    }
-
-                    // 2. طلاب الحلقات الفرعية إذا كان المعلم مسؤولاً عنها
+                    }                    // 2. طلاب الحلقات الفرعية إذا كان المعلم مسؤولاً عنها
                     $circleGroups = \App\Models\CircleGroup::where('quran_circle_id', $teacher->quranCircle->id)
                         ->where('teacher_id', $teacher->id)
                         ->get();

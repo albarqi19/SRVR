@@ -15,3 +15,7 @@ Artisan::command('curriculum:daily-tasks {--evaluate-students} {--send-notificat
 Artisan::command('curriculum:weekly-tasks {--weekly-reports} {--cleanup-alerts} {--performance-analysis} {--all}', function () {
     \Illuminate\Support\Facades\Artisan::call('curriculum:weekly-tasks-internal');
 })->purpose('تشغيل المهام الأسبوعية لنظام التحديث التلقائي للمناهج');
+
+// تسجيل command إدارة رسائل WhatsApp
+// سيتم التعامل مع هذا الـ command من خلال Laravel Auto-Discovery
+// أو يمكن إضافته في AppServiceProvider أو Kernel

@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
 
 class WhatsAppMessageResource extends Resource
 {
@@ -333,35 +335,171 @@ class WhatsAppMessageResource extends Resource
                                 ->send();
                         }
                     }),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('mark_as_sent')
-                        ->label('تعيين كمرسلة')
-                        ->icon('heroicon-o-check')
-                        ->color('success')
-                        ->action(fn (Builder $query) => $query->update(['status' => 'sent', 'sent_at' => now()]))
-                        ->requiresConfirmation(),
-                    Tables\Actions\BulkAction::make('resend_failed')
-                        ->label('إعادة إرسال الفاشلة')
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('warning')
-                        ->action(function (Builder $query) {
-                            $messages = $query->where('status', 'failed')->get();
-                            foreach ($messages as $message) {
-                                $message->update([
-                                    'status' => 'pending',
-                                    'error_message' => null,
-                                    'failed_at' => null,
-                                ]);
-                                \App\Jobs\SendWhatsAppMessage::dispatch($message->id);
-                            }
-                        })
-                        ->requiresConfirmation(),
-                ]),
+            ])            ->headerActions([
+                Tables\Actions\ActionGroup::make([
+                        Tables\Actions\Action::make('show_status')
+                            ->label('عرض حالة القائمة')
+                            ->icon('heroicon-o-chart-bar')
+                            ->action(function () {
+                                $pendingCount = WhatsAppMessage::where('status', 'pending')->count();
+                                $failedCount = WhatsAppMessage::where('status', 'failed')->count();                                $queueJobs = DB::table('jobs')->count();
+                                $failedJobs = DB::table('failed_jobs')->count();
+                                
+                                \Filament\Notifications\Notification::make()
+                                    ->title('حالة رسائل الواتساب')
+                                    ->body("الرسائل المعلقة: {$pendingCount} | الرسائل الفاشلة: {$failedCount} | المهام المعلقة: {$queueJobs} | المهام الفاشلة: {$failedJobs}")
+                                    ->info()
+                                    ->duration(10000)
+                                    ->send();
+                            }),
+                        
+                        Tables\Actions\Action::make('retry_failed_messages')
+                            ->label('إعادة محاولة الرسائل الفاشلة')
+                            ->icon('heroicon-o-arrow-path')
+                            ->color('warning')
+                            ->requiresConfirmation()
+                            ->modalHeading('إعادة محاولة الرسائل الفاشلة')
+                            ->modalDescription('سيتم إعادة إضافة جميع الرسائل الفاشلة إلى قائمة الانتظار للإرسال مرة أخرى.')
+                            ->action(function () {
+                                try {
+                                    $failedMessages = WhatsAppMessage::where('status', 'failed')->get();
+                                    $count = $failedMessages->count();
+                                    
+                                    if ($count === 0) {
+                                        \Filament\Notifications\Notification::make()
+                                            ->title('لا توجد رسائل فاشلة')
+                                            ->body('لا توجد رسائل فاشلة لإعادة المحاولة.')
+                                            ->info()
+                                            ->send();
+                                        return;
+                                    }
+                                    
+                                    foreach ($failedMessages as $message) {
+                                        $message->update([
+                                            'status' => 'pending',
+                                            'error_message' => null,
+                                            'failed_at' => null,
+                                        ]);
+                                        \App\Jobs\SendWhatsAppMessage::dispatch($message->id);
+                                    }
+                                    
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('تم إعادة المحاولة')
+                                        ->body("تم إعادة إضافة {$count} رسالة فاشلة إلى قائمة الانتظار.")
+                                        ->success()
+                                        ->send();
+                                        
+                                } catch (\Exception $e) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('خطأ في إعادة المحاولة')
+                                        ->body('حدث خطأ: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                            }),
+                        
+                        Tables\Actions\Action::make('clear_queue')
+                            ->label('مسح قائمة الانتظار')
+                            ->icon('heroicon-o-trash')
+                            ->color('danger')
+                            ->requiresConfirmation()
+                            ->modalHeading('مسح قائمة الانتظار')
+                            ->modalDescription('تحذير! سيتم مسح جميع المهام المعلقة والفاشلة من قائمة الانتظار. هذا الإجراء لا يمكن التراجع عنه.')
+                            ->action(function () {
+                                try {                                    $pendingJobs = DB::table('jobs')->count();
+                                    $failedJobs = DB::table('failed_jobs')->count();
+                                    
+                                    // مسح الوظائف المعلقة والفاشلة
+                                    DB::table('jobs')->truncate();
+                                    DB::table('failed_jobs')->truncate();
+                                    
+                                    // إعادة تشغيل queue
+                                    Artisan::call('queue:restart');
+                                    
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('تم مسح قائمة الانتظار')
+                                        ->body("تم مسح {$pendingJobs} مهمة معلقة و {$failedJobs} مهمة فاشلة وإعادة تشغيل النظام.")
+                                        ->success()
+                                        ->send();
+                                        
+                                } catch (\Exception $e) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('خطأ في مسح القائمة')
+                                        ->body('حدث خطأ: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                            }),
+                        
+                        Tables\Actions\Action::make('process_pending')
+                            ->label('معالجة الرسائل المعلقة')
+                            ->icon('heroicon-o-play')
+                            ->color('success')
+                            ->action(function () {
+                                try {
+                                    $pendingMessages = WhatsAppMessage::where('status', 'pending')->get();
+                                    $count = $pendingMessages->count();
+                                    
+                                    if ($count === 0) {
+                                        \Filament\Notifications\Notification::make()
+                                            ->title('لا توجد رسائل معلقة')
+                                            ->body('لا توجد رسائل معلقة للمعالجة.')
+                                            ->info()
+                                            ->send();
+                                        return;
+                                    }
+                                    
+                                    foreach ($pendingMessages as $message) {
+                                        \App\Jobs\SendWhatsAppMessage::dispatch($message->id);
+                                    }
+                                      // تشغيل معالج قائمة الانتظار مرة واحدة
+                                    Artisan::call('queue:work', ['--once' => true, '--timeout' => 60]);
+                                    
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('تم بدء المعالجة')
+                                        ->body("تم إضافة {$count} رسالة معلقة إلى قائمة الانتظار وبدء المعالجة.")
+                                        ->success()
+                                        ->send();
+                                        
+                                } catch (\Exception $e) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('خطأ في المعالجة')
+                                        ->body('حدث خطأ: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                            }),
+                        
+                        Tables\Actions\Action::make('restart_queue')
+                            ->label('إعادة تشغيل النظام')
+                            ->icon('heroicon-o-arrow-path')
+                            ->color('gray')
+                            ->action(function () {
+                                try {
+                                    Artisan::call('queue:restart');
+                                    
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('تم إعادة التشغيل')
+                                        ->body('تم إعادة تشغيل نظام قائمة الانتظار بنجاح.')
+                                        ->success()
+                                        ->send();
+                                        
+                                } catch (\Exception $e) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('خطأ في إعادة التشغيل')
+                                        ->body('حدث خطأ: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }                            }),
+                    ])
+                    ->label('إدارة الرسائل العالقة')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->color('info')
+                    ->button(),
             ]);
-    }    public static function getPages(): array
+    }
+
+    public static function getPages(): array
     {
         return [
             'index' => Pages\ListWhatsAppMessages::route('/'),

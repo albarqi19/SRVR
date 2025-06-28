@@ -26,10 +26,10 @@ class IndividualCircleTeacherResource extends Resource
     protected static ?string $pluralLabel = 'الحلقات الفردية';
     
     // وضع المورد في مجموعة التنقل المناسبة
-    protected static ?string $navigationGroup = 'التعليمية';
+    protected static ?string $navigationGroup = 'إدارة المساجد والحلقات';
     
     // ترتيب المورد في القائمة
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 15;
     
     /**
      * إظهار عدد العناصر في مربع العدد (Badge) في القائمة

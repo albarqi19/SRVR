@@ -25,12 +25,11 @@ class TeacherResource extends Resource
     // إضافة الترجمات العربية
     protected static ?string $modelLabel = 'معلم';
     protected static ?string $pluralModelLabel = 'المعلمين';
-    
-    // تعيين مجموعة التنقل في القائمة
-    protected static ?string $navigationGroup = 'التعليمية';
+      // تعيين مجموعة التنقل في القائمة
+    protected static ?string $navigationGroup = 'إدارة الطلاب والمعلمين';
     
     // ترتيب ظهور المورد في القائمة
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 22;
 
     public static function form(Form $form): Form
     {

@@ -31,10 +31,9 @@ class StudentProgressResource extends Resource
     protected static ?string $modelLabel = 'تقدم طالب';
     
     protected static ?string $pluralModelLabel = 'تقدم الطلاب';
+      protected static ?string $navigationGroup = 'إدارة الطلاب والمعلمين';
     
-    protected static ?string $navigationGroup = 'المناهج والتقدم';
-    
-    protected static ?int $navigationSort = 4;    public static function form(Form $form): Form
+    protected static ?int $navigationSort = 23;public static function form(Form $form): Form
     {
         return $form
             ->schema([

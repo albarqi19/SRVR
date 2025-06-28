@@ -450,4 +450,28 @@ class WhatsAppTemplateService
                "وجعل عامك الجديد مليئاً بالإنجازات 🌟\n\n" .
                "مركز القرآن الكريم 🤲";
     }
+
+    /**
+     * Get student attendance message (for all attendance statuses).
+     *
+     * @param string $studentName
+     * @param string $status
+     * @param string $date
+     * @return string
+     */
+    public static function getStudentAttendanceMessage(string $studentName, string $status, string $date): string
+    {
+        switch ($status) {
+            case 'غائب':
+                return self::absenceNotificationMessage($studentName, $date, 'الحلقة');
+            case 'حاضر':
+                return self::attendanceConfirmationMessage($studentName, $date, 'الحلقة');
+            case 'متأخر':
+                return "السلام عليكم {$studentName}, تم تسجيل تأخيرك بتاريخ {$date}. نرجو الحرص على الحضور في الوقت المناسب.";
+            case 'مأذون':
+                return "السلام عليكم {$studentName}, تم تسجيل إذنك بتاريخ {$date}. نتطلع لحضورك في المرة القادمة.";
+            default:
+                return "السلام عليكم {$studentName}, تم تسجيل حضورك بحالة: {$status} بتاريخ {$date}.";
+        }
+    }
 }
