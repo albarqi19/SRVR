@@ -1,14 +1,11 @@
-# Railway Build Configuration
-# This file tells Railway how to build Laravel properly
+[phases.setup]
+nixPkgs = ["...", "php81", "php81Packages.composer"]
 
-[build]
-builder = "nixpacks"
+[phases.install]
+cmds = ["composer install --no-dev --optimize-autoloader"]
 
-[build.env]
-NODE_VERSION = "18"
-PHP_VERSION = "8.1"
+[phases.build]
+cmds = ["php artisan config:cache", "php artisan route:cache", "php artisan view:cache"]
 
-[deploy]
-startCommand = "php artisan serve --host=0.0.0.0 --port=$PORT"
-healthcheckPath = "/"
-restartPolicyType = "always"
+[start]
+cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
