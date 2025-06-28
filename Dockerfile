@@ -1,9 +1,7 @@
-FROM php:8.1-fpm
+FROM php:8.1-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
@@ -15,22 +13,19 @@ RUN apt-get update && apt-get install -y \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /app
-
-# Copy composer files
-COPY composer.json composer.lock ./
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+WORKDIR /var/www/html
 
 # Copy application
 COPY . .
 
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader
+
 # Set permissions
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html
 
 # Expose port
-EXPOSE 8000
+EXPOSE 80
 
-# Start command
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Start Apache
+CMD ["apache2-foreground"]
