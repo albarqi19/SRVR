@@ -4,9 +4,12 @@
   "description": "Mosque Admin Dashboard",
   "main": "index.html",
   "scripts": {
-    "build": "if not exist dist mkdir dist && copy mosque_admin_dashboard.html dist\\index.html && copy dashboard.js dist\\ && copy styles.css dist\\",
-    "start": "python -m http.server 3000",
-    "dev": "python -m http.server 3000"
+    "build": "vite build && mkdir -p dist && cp -r public/* dist/ 2>/dev/null || (if not exist dist mkdir dist && xcopy public\\* dist\\ /E /H /C /I)",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.3.2"
   },
   "keywords": ["mosque", "dashboard", "admin"],
   "author": "Your Name",
