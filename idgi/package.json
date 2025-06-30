@@ -2,14 +2,9 @@
   "name": "mosque-admin-dashboard",
   "version": "1.0.0",
   "description": "Mosque Admin Dashboard",
-  "main": "index.html",
+  "main": "mosque_admin_dashboard.html",
   "scripts": {
-    "build": "vite build && mkdir -p dist && cp -r public/* dist/ 2>/dev/null || (if not exist dist mkdir dist && xcopy public\\* dist\\ /E /H /C /I)",
-    "dev": "vite",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "vite": "^6.3.2"
+    "build": "echo 'No build needed - static files'"
   },
   "keywords": ["mosque", "dashboard", "admin"],
   "author": "Your Name",
