@@ -1,0 +1,14 @@
+{
+  "name": "mosque-admin-dashboard",
+  "version": "1.0.0",
+  "description": "Mosque Admin Dashboard",
+  "main": "index.html",
+  "scripts": {
+    "build": "if not exist dist mkdir dist && copy mosque_admin_dashboard.html dist\\index.html && copy dashboard.js dist\\ && copy styles.css dist\\",
+    "start": "python -m http.server 3000",
+    "dev": "python -m http.server 3000"
+  },
+  "keywords": ["mosque", "dashboard", "admin"],
+  "author": "Your Name",
+  "license": "MIT"
+}
