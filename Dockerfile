@@ -1,20 +1,25 @@
 FROM php:8.2-apache
 
-# Install system dependencies and PHP extensions
+# Install system dependencies in stages to reduce network issues
 RUN apt-get update && apt-get install -y \
     git \
     curl \
+    zip \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extension dependencies
+RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
     libicu-dev \
     libzip-dev \
     libsodium-dev \
-    zip \
-    unzip \
-    nodejs \
-    npm \
-    && docker-php-ext-configure intl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-configure intl \
     && docker-php-ext-install \
         pdo_mysql \
         mbstring \
@@ -24,12 +29,14 @@ RUN apt-get update && apt-get install -y \
         gd \
         intl \
         sodium \
-        zip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+        zip
+
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Enable Apache modules
 RUN a2enmod rewrite
@@ -41,7 +48,7 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 
 # Install PHP dependencies with platform requirements ignored
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-scripts
 
 # Copy application files
 COPY . .
