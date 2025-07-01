@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
@@ -61,8 +61,8 @@ RUN ./composer-install.sh
 # Copy application files
 COPY . .
 
-# Run composer scripts separately
-RUN composer dump-autoload --optimize
+# Run composer scripts separately with platform requirements ignored
+RUN composer dump-autoload --optimize --ignore-platform-reqs
 
 # Create required directories and set permissions
 RUN mkdir -p \
