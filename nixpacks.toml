@@ -3,10 +3,14 @@ nixPkgs = ['php82', 'php82Extensions.bcmath', 'php82Extensions.ctype', 'php82Ext
 
 [phases.install] 
 cmds = [
+  # Setup directories and permissions
+  "bash railway-setup.sh",
+  # Remove old lock file
+  "rm -f composer.lock",
   # Copy environment file
   "cp .env.example .env",
-  # Install PHP dependencies
-  "composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts",
+  # Install PHP dependencies with platform ignore
+  "composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts",
   # Generate app key
   "php artisan key:generate --force --no-interaction",
   # Install and build assets

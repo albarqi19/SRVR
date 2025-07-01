@@ -24,6 +24,9 @@ yarn-error.log
 /.zed
 .qodo
 
+# For Railway deployment - let it generate fresh
+composer.lock
+
 # Database backups
 *.sql
 *.sql.gz
