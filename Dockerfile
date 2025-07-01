@@ -36,10 +36,10 @@ RUN a2enmod rewrite
 WORKDIR /var/www/html
 
 # Copy composer.json and install script first for better caching
-COPY composer.json composer-install.sh ./
+COPY composer.json composer-install-no-scripts.sh ./
 
 # Make install script executable
-RUN chmod +x composer-install.sh
+RUN chmod +x composer-install-no-scripts.sh
 
 # Create basic .env file to avoid missing file errors
 RUN echo "APP_NAME=GARB" > .env \
@@ -55,14 +55,14 @@ RUN mkdir -p storage/framework/cache \
     && mkdir -p storage/logs \
     && mkdir -p bootstrap/cache
 
-# Install PHP dependencies using the debug script
-RUN ./composer-install.sh
+# Install PHP dependencies using the no-scripts version
+RUN ./composer-install-no-scripts.sh
 
 # Copy application files
 COPY . .
 
-# Run composer scripts separately with platform requirements ignored
-RUN composer dump-autoload --optimize --ignore-platform-reqs
+# Final composer optimization after all files are copied
+RUN composer dump-autoload --optimize --no-scripts
 
 # Create required directories and set permissions
 RUN mkdir -p \

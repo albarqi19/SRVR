@@ -22,7 +22,4 @@ composer show --platform
 echo "🔍 Installing dependencies..."
 composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-interaction --no-scripts --verbose
 
-echo "🔍 Running optimized autoload dump..."
-composer dump-autoload --optimize --ignore-platform-reqs
-
 echo "✅ Composer install completed successfully!"
