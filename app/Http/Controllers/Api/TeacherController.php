@@ -16,6 +16,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 /**
  * API المعلمين - عرض وإدارة بيانات المعلمين والحلقات والطلاب
@@ -34,7 +36,15 @@ class TeacherController extends Controller
 
             // فلترة حسب المسجد
             if ($request->filled('mosque_id')) {
-                $query->where('mosque_id', $request->mosque_id);
+                $mosqueId = $request->mosque_id;
+                $query->where(function($q) use ($mosqueId) {
+                    // المعلمون المرتبطون بالمسجد مباشرة
+                    $q->where('mosque_id', $mosqueId)
+                      // أو المعلمون المكلفون في حلقات هذا المسجد
+                      ->orWhereHas('quranCircle', function($circleQuery) use ($mosqueId) {
+                          $circleQuery->where('mosque_id', $mosqueId);
+                      });
+                });
             }
 
             // فلترة حسب حالة النشاط
@@ -1275,5 +1285,88 @@ class TeacherController extends Controller
                 'نسبة_الحضور' => 0
             ]
         ];
+    }
+
+    /**
+     * الحصول على user_id المرتبط بـ teacher_id
+     */
+    public function getUserIdFromTeacherId($teacherId)
+    {
+        try {
+            // البحث عن المعلم في جدول teachers
+            $teacher = DB::table('teachers')->where('id', $teacherId)->first();
+            
+            if (!$teacher) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المعلم غير موجود',
+                    'error_code' => 'TEACHER_NOT_FOUND'
+                ], 404);
+            }
+
+            // البحث عن user مرتبط بهذا المعلم
+            // يمكن أن يكون البحث بالاسم أو رقم الهوية أو البريد الإلكتروني المُولد
+            $user = User::where('email', 'teacher_' . $teacherId . '@garb.com')
+                       ->orWhere('name', $teacher->name)
+                       ->first();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا يوجد مستخدم مرتبط بهذا المعلم',
+                    'error_code' => 'USER_NOT_FOUND',
+                    'suggestion' => 'استخدم الأمر: php artisan create:user-for-teacher ' . $teacherId
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'teacher_id_in_teachers_table' => $teacherId,
+                    'teacher_id_for_api' => $user->id,
+                    'teacher_name' => $teacher->name,
+                    'user_email' => $user->email
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في النظام',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * الحصول على قائمة بجميع المعلمين مع user_id المرتبط
+     */
+    public function getTeachersWithUserIds()
+    {
+        try {
+            $teachers = DB::table('teachers')
+                ->leftJoin('users', function($join) {
+                    $join->on('users.name', '=', 'teachers.name');
+                })
+                ->select(
+                    'teachers.id as teacher_id',
+                    'teachers.name as teacher_name',
+                    'users.id as user_id',
+                    'users.email as user_email'
+                )
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $teachers
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في النظام',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

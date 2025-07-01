@@ -24,8 +24,8 @@ class CircleController extends Controller
         try {
             $query = QuranCircle::with([
                 'teacher.user:id,name,phone',
-                'students:id,name,student_number,phone',
-                'circleGroup:id,name',
+                'students:id,name,identity_number,phone',
+                'circleGroups.teacher:id,name',
                 'mosque:id,name'
             ]);
 
@@ -74,7 +74,7 @@ class CircleController extends Controller
                         return [
                             'id' => $student->id,
                             'الاسم' => $student->name,
-                            'رقم_الطالب' => $student->student_number
+                            'رقم_الطالب' => $student->identity_number
                         ];
                     }),
                     'نشطة' => $circle->is_active ? 'نعم' : 'لا',
@@ -194,7 +194,7 @@ class CircleController extends Controller
                     return [
                         'id' => $student->id,
                         'الاسم' => $student->name,
-                        'رقم_الطالب' => $student->student_number,
+                        'رقم_الطالب' => $student->identity_number,
                         'رقم_الهاتف' => $student->phone,
                         'نشط' => $student->is_active ? 'نعم' : 'لا',
                         'المنهج_الحالي' => [
@@ -339,7 +339,7 @@ class CircleController extends Controller
                     'التقدم' => $progressStats,
                     'التسميع' => [
                         'إجمالي_الجلسات' => $recitationStats->total_sessions ?? 0,
-                        'متوسط_الجودة' => round($recitationStats->avg_quality ?? 0, 2),
+                        'متوسط_جودة_التسميع' => round($recitationStats->avg_quality ?? 0, 2),
                         'إجمالي_الصفحات_المسمعة' => $recitationStats->total_pages ?? 0,
                         'الجلسات_الممتازة' => $recitationStats->excellent_sessions ?? 0,
                         'الجلسات_الجيدة' => $recitationStats->good_sessions ?? 0,
@@ -379,8 +379,7 @@ class CircleController extends Controller
 
             $circles = QuranCircle::where('teacher_id', $teacherId)
                 ->with([
-                    'students:id,name,student_number',
-                    'circleGroup:id,name',
+                    'students:id,name,identity_number',
                     'mosque:id,name'
                 ])
                 ->get();
@@ -399,7 +398,7 @@ class CircleController extends Controller
                         return [
                             'id' => $student->id,
                             'الاسم' => $student->name,
-                            'رقم_الطالب' => $student->student_number
+                            'رقم_الطالب' => $student->identity_number
                         ];
                     }),
                 ];
@@ -489,6 +488,113 @@ class CircleController extends Controller
             return response()->json([
                 'نجح' => false,
                 'رسالة' => 'حدث خطأ أثناء جلب أفضل الحلقات',
+                'خطأ' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * جلب جميع الحلقات والحلقات الفرعية للمسجد
+     */
+    public function getAllCirclesAndGroups(Request $request): JsonResponse
+    {
+        try {
+            $allCircles = [];
+            
+            // جلب الحلقات الرئيسية
+            $mainCircles = QuranCircle::with(['mosque:id,name'])
+                ->where('mosque_id', $request->mosque_id ?? 1)
+                ->get();
+            
+            foreach ($mainCircles as $circle) {
+                // إضافة الحلقة الرئيسية
+                $allCircles[] = [
+                    'id' => 'main_' . $circle->id,
+                    'name' => $circle->name,
+                    'type' => 'main',
+                    'parent_id' => null,
+                    'mosque' => $circle->mosque->name ?? 'غير محدد'
+                ];
+                
+                // جلب الحلقات الفرعية لهذه الحلقة
+                $subCircles = \App\Models\CircleGroup::with(['teacher:id,name'])
+                    ->where('quran_circle_id', $circle->id)
+                    ->where('is_active', true)
+                    ->get();
+                
+                foreach ($subCircles as $subCircle) {
+                    $allCircles[] = [
+                        'id' => 'sub_' . $subCircle->id,
+                        'name' => $subCircle->name,
+                        'type' => 'sub',
+                        'parent_id' => $circle->id,
+                        'parent_name' => $circle->name,
+                        'teacher' => $subCircle->teacher->name ?? 'غير محدد',
+                        'mosque' => $circle->mosque->name ?? 'غير محدد'
+                    ];
+                }
+            }
+            
+            return response()->json([
+                'نجح' => true,
+                'رسالة' => 'تم جلب جميع الحلقات والحلقات الفرعية بنجاح',
+                'البيانات' => $allCircles
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'نجح' => false,
+                'رسالة' => 'حدث خطأ أثناء جلب الحلقات',
+                'خطأ' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * جلب طلاب حلقة محددة (للداشبورد)
+     */
+    public function getCircleStudents($id): JsonResponse
+    {
+        try {
+            $circle = QuranCircle::with([
+                'students' => function($query) {
+                    $query->where('is_active', true);
+                }
+            ])->findOrFail($id);
+
+            $students = $circle->students->map(function ($student) {
+                return [
+                    'id' => $student->id,
+                    'name' => $student->name,
+                    'الاسم' => $student->name,
+                    'identity_number' => $student->identity_number,
+                    'رقم_الطالب' => $student->identity_number,
+                    'phone' => $student->phone,
+                    'رقم_الهاتف' => $student->phone,
+                    'enrollment_date' => $student->enrollment_date,
+                    'تاريخ_التسجيل' => $student->enrollment_date,
+                    'education_level' => $student->education_level,
+                    'المستوى_التعليمي' => $student->education_level,
+                    'neighborhood' => $student->neighborhood,
+                    'الحي' => $student->neighborhood,
+                    'is_active' => $student->is_active,
+                    'quran_circle_id' => $student->quran_circle_id
+                ];
+            });
+
+            return response()->json([
+                'نجح' => true,
+                'success' => true,
+                'رسالة' => 'تم جلب طلاب الحلقة بنجاح',
+                'البيانات' => $students,
+                'data' => $students
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'نجح' => false,
+                'success' => false,
+                'رسالة' => 'حدث خطأ أثناء جلب طلاب الحلقة',
                 'خطأ' => $e->getMessage()
             ], 500);
         }

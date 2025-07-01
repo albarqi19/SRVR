@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\RecitationSession;
 use App\Models\Student;
+use App\Models\Teacher;
 use App\Models\User;
 use App\Models\QuranCircle;
 use App\Models\StudentProgress;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Rules\ValidTeacherId;
 
 class RecitationSessionController extends Controller
 {
@@ -74,6 +76,54 @@ class RecitationSessionController extends Controller
     }
 
     /**
+     * تحويل user_id إلى teacher_id الحقيقي
+     */
+    private function resolveTeacherId($inputId): array
+    {
+        // الأولوية الأولى: البحث عن معلم بـ user_id (الحالة الصحيحة)
+        $teacherByUserId = Teacher::where('user_id', $inputId)->first();
+        if ($teacherByUserId) {
+            return [
+                'teacher_id' => $teacherByUserId->id,
+                'user_id' => $inputId,
+                'teacher_name' => $teacherByUserId->name,
+                'method' => 'user_id_lookup_priority'
+            ];
+        }
+        
+        // الأولوية الثانية: التحقق إذا كان المعرف موجود في جدول teachers مباشرة
+        $directTeacher = Teacher::find($inputId);
+        if ($directTeacher) {
+            return [
+                'teacher_id' => $directTeacher->id,
+                'user_id' => $directTeacher->user_id ?? $inputId,
+                'teacher_name' => $directTeacher->name,
+                'method' => 'direct_teacher_lookup'
+            ];
+        }
+        
+        // الأولوية الثالثة: التحقق من وجود المعرف في جدول users
+        $user = User::find($inputId);
+        if ($user) {
+            return [
+                'teacher_id' => null,
+                'user_id' => $inputId,
+                'teacher_name' => $user->name,
+                'method' => 'user_only',
+                'error' => 'المستخدم موجود لكن لا يوجد معلم مرتبط به'
+            ];
+        }
+        
+        return [
+            'teacher_id' => null,
+            'user_id' => null,
+            'teacher_name' => null,
+            'method' => 'not_found',
+            'error' => 'المعرف غير موجود'
+        ];
+    }
+
+    /**
      * إنشاء جلسة تسميع جديدة
      */    public function store(Request $request): JsonResponse
     {
@@ -101,9 +151,11 @@ class RecitationSessionController extends Controller
         }
           Log::info('Final Request Data', ['data' => $requestData]);
 
+        $teacherIdRule = new ValidTeacherId();
+        
         $validator = Validator::make($requestData, [
             'student_id' => 'required|exists:students,id',
-            'teacher_id' => 'required|exists:users,id',
+            'teacher_id' => ['required', $teacherIdRule],
             'quran_circle_id' => 'required|exists:quran_circles,id',
             'start_surah_number' => 'required|integer|min:1|max:114',
             'start_verse' => 'required|integer|min:1',
@@ -134,9 +186,30 @@ class RecitationSessionController extends Controller
                 ]
             ], 422);
         }        try {
-            DB::beginTransaction();            // إعداد البيانات للإنشاء
-            $sessionData = $requestData;
+            DB::beginTransaction();
             
+            // الحل البسيط: إذا كان teacher_id موجود في جدول teachers
+            // استخدم user_id المرتبط به للحفظ
+            $teacher = Teacher::find($requestData['teacher_id']);
+            
+            if (!$teacher) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المعلم غير موجود',
+                    'error' => "teacher_id {$requestData['teacher_id']} غير صحيح"
+                ], 422);
+            }
+            
+            // استخدام user_id للحفظ (يتطلبه foreign key)
+            $sessionData = $requestData;
+            $sessionData['teacher_id'] = $teacher->user_id;
+            
+            // إضافة معلومات للتتبع
+            $sessionData['teacher_notes'] = ($sessionData['teacher_notes'] ?? '') . 
+                " [المعلم: {$teacher->name}]";
+            
+            // إعداد البيانات للإنشاء
             // توليد session_id فريد
             $sessionData['session_id'] = 'session_' . time() . '_' . uniqid();
             

@@ -15,6 +15,9 @@ class TeacherObserver
      */
     public function created(Teacher $teacher): void
     {
+        // إنشاء حساب مستخدم للمعلم الجديد
+        $this->createUserForTeacher($teacher);
+
         // إنشاء كلمة مرور عشوائية للمعلم الجديد
         if (empty($teacher->password)) {
             $randomPassword = $teacher->generateRandomPassword();
@@ -180,6 +183,49 @@ class TeacherObserver
             }
             
             \Log::error("خطأ في إرسال إشعار الترحيب للمعلم: {$teacher->name} - {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * إنشاء حساب مستخدم للمعلم الجديد
+     */
+    private function createUserForTeacher(Teacher $teacher): void
+    {
+        try {
+            // التحقق من وجود مستخدم بنفس رقم المعلم (للحفاظ على التوحيد)
+            $existingUser = \App\Models\User::find($teacher->id);
+            
+            if ($existingUser) {
+                // ربط المعلم بالمستخدم الموجود (نفس الرقم)
+                $teacher->user_id = $teacher->id;
+                $teacher->saveQuietly();
+                \Illuminate\Support\Facades\Log::info("تم ربط المعلم {$teacher->name} بالمستخدم الموجود ID: {$teacher->id}");
+                return;
+            }
+
+            // إنشاء مستخدم جديد بنفس رقم المعلم (توحيد الأرقام)
+            $user = new \App\Models\User();
+            $user->id = $teacher->id; // نفس رقم المعلم
+            $user->name = $teacher->name;
+            $user->username = 'teacher' . $teacher->id;
+            $user->email = 'teacher' . $teacher->id . '@garb.local';
+            $user->password = \Illuminate\Support\Facades\Hash::make('password123');
+            if ($teacher->identity_number) {
+                $user->identity_number = $teacher->identity_number;
+            }
+            if ($teacher->phone) {
+                $user->phone = $teacher->phone;
+            }
+            $user->save();
+            
+            // ربط المعلم بالمستخدم الجديد (نفس الرقم)
+            $teacher->user_id = $teacher->id;
+            $teacher->saveQuietly();
+            
+            \Illuminate\Support\Facades\Log::info("تم إنشاء مستخدم جديد للمعلم {$teacher->name} - Teacher ID = User ID = {$teacher->id}");
+            
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("خطأ في إنشاء مستخدم للمعلم {$teacher->name}: {$e->getMessage()}");
         }
     }
 

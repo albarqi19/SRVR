@@ -17,6 +17,7 @@ use App\Models\QuranCircle;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TagsInput;
+use Illuminate\Support\Facades\Log;
 
 class CircleGroupsRelationManager extends RelationManager
 {
@@ -44,17 +45,17 @@ class CircleGroupsRelationManager extends RelationManager
                         $quranCircle = $livewire->getOwnerRecord();
                         
                         // إضافة logging للتشخيص
-                        \Log::info('CircleGroupsRelationManager - جلب المعلمين للحلقة: ' . $quranCircle->name);
+                        Log::info('CircleGroupsRelationManager - جلب المعلمين للحلقة: ' . $quranCircle->name);
                         
                         $options = [];
                         
                         // 1. جلب المعلمين المكلفين في هذه الحلقة (أولوية عالية)
                         $currentCircleTeachers = $quranCircle->activeTeachers;
-                        \Log::info('عدد المعلمين في الحلقة الحالية: ' . $currentCircleTeachers->count());
+                        Log::info('عدد المعلمين في الحلقة الحالية: ' . $currentCircleTeachers->count());
                         
                         foreach ($currentCircleTeachers as $teacher) {
                             $options[$teacher->id] = $teacher->name . ' (مكلف في هذه الحلقة)';
-                            \Log::info('تمت إضافة المعلم: ' . $teacher->name);
+                            Log::info('تمت إضافة المعلم: ' . $teacher->name);
                         }
                         
                         // 2. جلب جميع المعلمين المكلفين في أي حلقة قرآنية أخرى
@@ -63,7 +64,7 @@ class CircleGroupsRelationManager extends RelationManager
                                   ->where('quran_circle_id', '!=', $quranCircle->id);
                         })->with(['circleAssignments.circle'])->get();
                         
-                        \Log::info('عدد المعلمين في حلقات أخرى: ' . $allAssignedTeachers->count());
+                        Log::info('عدد المعلمين في حلقات أخرى: ' . $allAssignedTeachers->count());
                         
                         foreach ($allAssignedTeachers as $teacher) {
                             if (!isset($options[$teacher->id])) {
@@ -83,7 +84,7 @@ class CircleGroupsRelationManager extends RelationManager
                                 } else {
                                     $options[$teacher->id] = $teacher->name . ' (مكلف في حلقة أخرى)';
                                 }
-                                \Log::info('تمت إضافة المعلم من حلقة أخرى: ' . $teacher->name);
+                                Log::info('تمت إضافة المعلم من حلقة أخرى: ' . $teacher->name);
                             }
                         }
                         
@@ -96,26 +97,26 @@ class CircleGroupsRelationManager extends RelationManager
                                 ->orderBy('name')
                                 ->get();
                             
-                            \Log::info('عدد معلمي المسجد غير المكلفين: ' . $mosqueTeachers->count());
+                            Log::info('عدد معلمي المسجد غير المكلفين: ' . $mosqueTeachers->count());
                             
                             foreach ($mosqueTeachers as $teacher) {
                                 if (!isset($options[$teacher->id])) {
                                     $options[$teacher->id] = $teacher->name . ' (من نفس المسجد)';
-                                    \Log::info('تمت إضافة معلم المسجد: ' . $teacher->name);
+                                    Log::info('تمت إضافة معلم المسجد: ' . $teacher->name);
                                 }
                             }
                         }
                         
                         // 4. إذا لم توجد خيارات، أضف جميع المعلمين
                         if (empty($options)) {
-                            \Log::warning('لا توجد خيارات! إضافة جميع المعلمين...');
+                            Log::warning('لا توجد خيارات! إضافة جميع المعلمين...');
                             $allTeachers = Teacher::orderBy('name')->get();
                             foreach ($allTeachers as $teacher) {
                                 $options[$teacher->id] = $teacher->name . ' (جميع المعلمين)';
                             }
                         }
                         
-                        \Log::info('إجمالي الخيارات المُرجعة: ' . count($options), $options);
+                        Log::info('إجمالي الخيارات المُرجعة: ' . count($options), $options);
                         
                         return $options;
                     })
@@ -243,6 +244,10 @@ class CircleGroupsRelationManager extends RelationManager
                     ->label('تعديل')
                     ->modalHeading('تعديل بيانات الحلقة الفرعية'),
                 
+                Tables\Actions\ViewAction::make()
+                    ->label('عرض')
+                    ->modalHeading('عرض تفاصيل الحلقة الفرعية'),
+                
                 Tables\Actions\Action::make('viewStudents')
                     ->label('عرض الطلاب')
                     ->icon('heroicon-o-users')
@@ -250,6 +255,38 @@ class CircleGroupsRelationManager extends RelationManager
                         'tableFilters[circle_group_id][value]' => $record->id,
                     ]))
                     ->openUrlInNewTab(),
+                
+                // زر حذف مخصص - أسلوب مختلف
+                Tables\Actions\Action::make('deleteCircleGroup')
+                    ->label('❌ حذف')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('⚠️ حذف الحلقة الفرعية')
+                    ->modalDescription('سيتم حذف هذه الحلقة ونقل جميع طلابها للحلقة الرئيسية')
+                    ->modalSubmitActionLabel('حذف')
+                    ->modalCancelActionLabel('إلغاء')
+                    ->action(function ($record, $livewire) {
+                        // نقل الطلاب أولاً
+                        $studentsCount = Student::where('circle_group_id', $record->id)->count();
+                        
+                        if ($studentsCount > 0) {
+                            Student::where('circle_group_id', $record->id)
+                                ->update(['circle_group_id' => null]);
+                            
+                            Log::info("تم نقل {$studentsCount} طالب من الحلقة الفرعية '{$record->name}'");
+                        }
+                        
+                        // حذف الحلقة
+                        $record->delete();
+                        
+                        // إشعار بالنجاح
+                        Notification::make()
+                            ->title('✅ تم الحذف بنجاح')
+                            ->body("تم حذف الحلقة ونقل {$studentsCount} طالب للحلقة الرئيسية")
+                            ->success()
+                            ->send();
+                    }),
                 
                 Tables\Actions\Action::make('addStudents')
                     ->label('إضافة طلاب')
@@ -277,7 +314,7 @@ class CircleGroupsRelationManager extends RelationManager
                                 ->update(['circle_group_id' => $record->id]);
                                 
                             // عرض رسالة نجاح العملية
-                            Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('تمت إضافة الطلاب بنجاح')
                                 ->success()
                                 ->send();
@@ -309,7 +346,7 @@ class CircleGroupsRelationManager extends RelationManager
                                 ->update(['circle_group_id' => null]);
                                 
                             // عرض رسالة نجاح العملية
-                            Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('تمت إزالة الطلاب بنجاح')
                                 ->success()
                                 ->send();
@@ -317,12 +354,80 @@ class CircleGroupsRelationManager extends RelationManager
                     }),
                 
                 Tables\Actions\DeleteAction::make()
-                    ->label('حذف'),
+                    ->label('🗑️ حذف الحلقة')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(true) // إجبار الزر على الظهور
+                    ->modalHeading('⚠️ تأكيد حذف الحلقة الفرعية')
+                    ->modalDescription('هل أنت متأكد من حذف هذه الحلقة الفرعية؟ سيتم نقل جميع الطلاب المسجلين فيها إلى الحلقة الرئيسية تلقائياً.')
+                    ->modalSubmitActionLabel('نعم، احذف الحلقة')
+                    ->modalCancelActionLabel('إلغاء')
+                    ->modalIcon('heroicon-o-exclamation-triangle')
+                    ->modalIconColor('danger')
+                    ->before(function ($record, $livewire) {
+                        // نقل جميع الطلاب في هذه الحلقة الفرعية إلى الحلقة الرئيسية
+                        $studentsCount = Student::where('circle_group_id', $record->id)->count();
+                        
+                        if ($studentsCount > 0) {
+                            // الحصول على الحلقة الرئيسية
+                            $quranCircle = $livewire->getOwnerRecord();
+                            
+                            // نقل الطلاب للحلقة الرئيسية
+                            Student::where('circle_group_id', $record->id)
+                                ->update(['circle_group_id' => null]);
+                            
+                            // تسجيل العملية في اللوج
+                            Log::info("تم نقل {$studentsCount} طالب من الحلقة الفرعية '{$record->name}' إلى الحلقة الرئيسية '{$quranCircle->name}'");
+                        }
+                    })
+                    ->after(function ($record) {
+                        // عرض رسالة نجاح
+                        Notification::make()
+                            ->title('تم حذف الحلقة الفرعية بنجاح')
+                            ->body('تم نقل جميع الطلاب إلى الحلقة الرئيسية تلقائياً.')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->label('حذف المحدد'),
+                        ->label('حذف المحدد')
+                        ->requiresConfirmation()
+                        ->modalHeading('حذف الحلقات الفرعية المحددة')
+                        ->modalDescription('هل أنت متأكد من حذف الحلقات الفرعية المحددة؟ سيتم نقل جميع الطلاب المسجلين فيها إلى الحلقة الرئيسية تلقائياً.')
+                        ->before(function ($records, $livewire) {
+                            // نقل جميع الطلاب في الحلقات الفرعية المحددة إلى الحلقة الرئيسية
+                            $totalStudentsCount = 0;
+                            $quranCircle = $livewire->getOwnerRecord();
+                            
+                            foreach ($records as $record) {
+                                $studentsCount = Student::where('circle_group_id', $record->id)->count();
+                                $totalStudentsCount += $studentsCount;
+                                
+                                if ($studentsCount > 0) {
+                                    // نقل الطلاب للحلقة الرئيسية
+                                    Student::where('circle_group_id', $record->id)
+                                        ->update(['circle_group_id' => null]);
+                                    
+                                    // تسجيل العملية في اللوج
+                                    Log::info("تم نقل {$studentsCount} طالب من الحلقة الفرعية '{$record->name}' إلى الحلقة الرئيسية '{$quranCircle->name}'");
+                                }
+                            }
+                            
+                            if ($totalStudentsCount > 0) {
+                                Log::info("إجمالي الطلاب المنقولين: {$totalStudentsCount}");
+                            }
+                        })
+                        ->after(function () {
+                            // عرض رسالة نجاح
+                            Notification::make()
+                                ->title('تم حذف الحلقات الفرعية بنجاح')
+                                ->body('تم نقل جميع الطلاب إلى الحلقة الرئيسية تلقائياً.')
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ]);
     }

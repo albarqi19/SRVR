@@ -25,6 +25,8 @@ return [
         'http://127.0.0.1:3000',
         'http://127.0.0.1:3002',
         'https://appgarb.vercel.app',
+        'https://d0-weld.vercel.app',
+        'https://d0-rose.vercel.app',
         env('FRONTEND_URL', 'http://localhost:3001'),
     ],
 

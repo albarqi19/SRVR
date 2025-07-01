@@ -1,61 +1,135 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GARB - نظام إدارة حلقات القرآن الكريم
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+نظام شامل لإدارة حلقات تحفيظ القرآن الكريم في المساجد، مبني على Laravel مع واجهة إدارية متقدمة باستخدام Filament.
 
-## About Laravel
+## الميزات الرئيسية
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **إدارة شاملة للحلقات**: تنظيم حلقات التحفيظ والمعلمين والطلاب
+- **نظام متابعة التقدم**: تتبع تقدم الطلاب في حفظ القرآن الكريم
+- **إدارة الحضور والغياب**: نظام متطور لتسجيل ومتابعة الحضور
+- **نظام التقييم**: تقييم الطلاب وتسجيل درجاتهم
+- **تقارير مفصلة**: تقارير شاملة عن أداء الطلاب والحلقات
+- **واجهة إدارية متقدمة**: لوحة تحكم سهلة الاستخدام مع Filament
+- **دعم الهواتف الذكية**: واجهة متجاوبة تعمل على جميع الأجهزة
+- **نظام أذونات متقدم**: إدارة صلاحيات المستخدمين حسب الأدوار
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## متطلبات النظام
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.1 أو أحدث
+- MySQL 8.0 أو أحدث
+- Composer
+- Node.js & NPM
 
-## Learning Laravel
+## التثبيت
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+1. استنساخ المشروع:
+```bash
+git clone https://github.com/albarqi19/SRVR.git
+cd SRVR
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+2. تثبيت التبعيات:
+```bash
+composer install
+npm install && npm run build
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+3. إعداد ملف البيئة:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Laravel Sponsors
+4. إعداد قاعدة البيانات:
+```bash
+php artisan migrate --seed
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+5. إنشاء المستخدم الأول:
+```bash
+php artisan make:filament-user
+```
 
-### Premium Partners
+## النشر على Railway
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development/)**
-- **[Active Logic](https://activelogic.com)**
+### 1. إعداد متغيرات البيئة في Railway:
 
-## Contributing
+```
+APP_NAME="GARB Project"
+APP_ENV=production
+APP_KEY=base64:YOUR_APP_KEY_HERE
+APP_DEBUG=false
+APP_URL=https://your-railway-domain.up.railway.app
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+DB_CONNECTION=mysql
+DB_HOST=containers-us-west-xyz.railway.app
+DB_PORT=3306
+DB_DATABASE=railway
+DB_USERNAME=root
+DB_PASSWORD=YOUR_DB_PASSWORD
 
-## Code of Conduct
+SESSION_DRIVER=database
+CACHE_DRIVER=database
+QUEUE_CONNECTION=database
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 2. إعداد قاعدة البيانات:
+- أضف خدمة MySQL في Railway
+- احفظ تفاصيل الاتصال في متغيرات البيئة
 
-## Security Vulnerabilities
+### 3. نشر المشروع:
+```bash
+git push origin main
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## الاستخدام
 
-## License
+### الوصول للوحة التحكم:
+- الرابط: `https://your-domain.com/admin`
+- المستخدم الافتراضي: admin@example.com
+- كلمة المرور: password
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### الواجهات الرئيسية:
+- **/admin**: لوحة تحكم المدراء
+- **/teacher**: واجهة المعلمين
+- **/api**: واجهة برمجة التطبيقات
+
+## هيكل المشروع
+
+```
+├── app/
+│   ├── Filament/          # ملفات Filament Admin Panel
+│   ├── Models/            # نماذج البيانات
+│   ├── Http/              # Controllers & Middleware
+│   └── Services/          # خدمات النظام
+├── database/
+│   ├── migrations/        # ملفات الهجرة
+│   └── seeders/          # بيانات الاختبار
+├── resources/
+│   ├── views/            # ملفات العرض
+│   └── lang/             # ملفات الترجمة
+└── public/               # الملفات العامة
+```
+
+## المساهمة
+
+نرحب بمساهماتكم في تطوير النظام. يرجى:
+
+1. عمل Fork للمشروع
+2. إنشاء فرع جديد للميزة
+3. إجراء التغييرات المطلوبة
+4. إرسال Pull Request
+
+## الترخيص
+
+هذا المشروع مرخص تحت رخصة MIT - راجع ملف [LICENSE](LICENSE) للتفاصيل.
+
+## الدعم
+
+للحصول على المساعدة أو الإبلاغ عن المشاكل، يرجى:
+- فتح Issue في GitHub
+- التواصل عبر البريد الإلكتروني: support@garb-project.com
+
+---
+
+تم تطوير هذا النظام بعناية لخدمة بيوت الله وتسهيل تحفيظ كتاب الله الكريم.

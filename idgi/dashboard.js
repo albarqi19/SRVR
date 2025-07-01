@@ -743,13 +743,27 @@ async function saveAttendance() {
 
 // === Teachers Functions ===
 async function loadTeachersData() {
-    const date = document.getElementById('teachersDate').value;
+    const date = document.getElementById('teachersDate').value || new Date().toISOString().split('T')[0];
     
     try {
-        const response = await apiRequest(`/teachers?mosque_id=${API_CONFIG.mosqueId}`);
-        if (response.نجح && response.البيانات) {
-            teachersData = response.البيانات;
-            displayTeachers(teachersData, date);
+        // استخدام API الجديد لتتبع نشاط المعلمين
+        const response = await apiRequest(`/test/teachers-daily-activity?supervisor_id=1&date=${date}`);
+        
+        console.log('API Response:', response);
+        
+        if (response.success) {
+            teachersData = response.data.teachers_activity;
+            console.log('Teachers Data:', teachersData);
+            displayTeachers(response.data.teachers_activity, date);
+            updateTeachersSummary(response.data.summary);
+        } else {
+            console.error('Failed to load teachers data:', response.message);
+            document.getElementById('teachersList').innerHTML = `
+                <div class="info-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    خطأ في تحميل بيانات المعلمين: ${response.message || 'خطأ غير معروف'}
+                </div>
+            `;
         }
     } catch (error) {
         console.error('Teachers loading error:', error);
@@ -760,6 +774,44 @@ async function loadTeachersData() {
             </div>
         `;
     }
+}
+
+function updateTeachersSummary(summary) {
+    if (!summary) return;
+    
+    // إنشاء أو تحديث قسم الإحصائيات
+    let summaryElement = document.querySelector('.teachers-summary');
+    if (!summaryElement) {
+        summaryElement = document.createElement('div');
+        summaryElement.className = 'teachers-summary';
+        const teachersSection = document.getElementById('teachers');
+        teachersSection.insertBefore(summaryElement, document.getElementById('teachersList'));
+    }
+    
+    summaryElement.innerHTML = `
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h4>إجمالي المعلمين</h4>
+                <span class="summary-number">${summary.total_teachers}</span>
+            </div>
+            <div class="summary-card">
+                <h4>المعلمين النشطين</h4>
+                <span class="summary-number">${summary.active_teachers}</span>
+            </div>
+            <div class="summary-card">
+                <h4>نسبة التحضير</h4>
+                <span class="summary-percentage">${summary.attendance_percentage}%</span>
+            </div>
+            <div class="summary-card">
+                <h4>نسبة التسميع</h4>
+                <span class="summary-percentage">${summary.recitation_percentage}%</span>
+            </div>
+            <div class="summary-card">
+                <h4>معدل الإنجاز</h4>
+                <span class="summary-percentage ${summary.completion_rate >= 80 ? 'good' : summary.completion_rate >= 60 ? 'average' : 'poor'}">${summary.completion_rate}%</span>
+            </div>
+        </div>
+    `;
 }
 
 function displayTeachers(teachers, date) {
@@ -775,31 +827,78 @@ function displayTeachers(teachers, date) {
         return;
     }
 
-    teachersList.innerHTML = teachers.map(teacher => {
-        // محاكاة بيانات النشاط
-        const hasPreparation = Math.random() > 0.3;
-        const hasRecitation = Math.random() > 0.4;
+    teachersList.innerHTML = teachers.map(teacherData => {
+        const teacher = teacherData.teacher_name ? teacherData : teacherData;
+        const activity = teacherData.daily_activity || {};
+        
+        // إضافة console.log للتشخيص
+        console.log('Teacher:', teacher.teacher_name || teacher.name, 'Activity:', activity);
+        
+        // استخدام البيانات الحقيقية فقط
+        const hasPreparation = activity.attendance_recorded === true;
+        const hasRecitation = activity.recitation_recorded === true;
+        
+        console.log('hasPreparation:', hasPreparation, 'hasRecitation:', hasRecitation);
+        
+        const activityStatus = activity.activity_status || 'غير نشط';
+        const statusColor = activity.status_color || 'red';
+        
+        // تحديد لون الخلفية حسب النشاط
+        let cardClass = 'teacher-card';
+        if (hasPreparation && hasRecitation) {
+            cardClass += ' status-complete'; // أخضر
+        } else if (hasPreparation || hasRecitation) {
+            cardClass += ' status-partial'; // برتقالي
+        } else {
+            cardClass += ' status-inactive'; // أحمر فاتح
+        }
 
         return `
-            <div class="teacher-card">
+            <div class="${cardClass}" data-status="${statusColor}">
                 <div class="teacher-header">
                     <div class="teacher-avatar">
-                        ${(teacher.الاسم || teacher.name).charAt(0)}
+                        ${(teacher.teacher_name || teacher.الاسم || teacher.name).charAt(0)}
                     </div>
                     <div>
-                        <div class="teacher-name">${teacher.الاسم || teacher.name}</div>
-                        <div class="teacher-circle">${teacher.الحلقة || 'الحلقة الأولى'}</div>
+                        <div class="teacher-name">${teacher.teacher_name || teacher.الاسم || teacher.name}</div>
+                        <div class="teacher-circle">${teacher.circle?.name || teacher.الحلقة || 'غير محدد'}</div>
+                        <div class="teacher-phone">${teacher.phone || ''}</div>
+                        <div class="teacher-status ${statusColor}">${activityStatus}</div>
                     </div>
                 </div>
                 <div class="teacher-activity">
                     <div class="activity-status ${hasPreparation ? 'active' : 'inactive'}">
                         <i class="fas fa-book"></i>
-                        ${hasPreparation ? 'تم التحضير' : 'لم يحضر'}
+                        <span>التحضير</span>
+                        <div class="activity-details">
+                            ${hasPreparation ? 
+                                `تم (${activity.attendance_percentage || 0}%)` : 
+                                'لم يحضر'
+                            }
+                        </div>
                     </div>
                     <div class="activity-status ${hasRecitation ? 'active' : 'inactive'}">
                         <i class="fas fa-microphone"></i>
-                        ${hasRecitation ? 'تم التسميع' : 'لم يسمع'}
+                        <span>التسميع</span>
+                        <div class="activity-details">
+                            ${hasRecitation ? 
+                                `تم (${activity.recitation_percentage || 0}%)` : 
+                                'لم يسمع'
+                            }
+                        </div>
                     </div>
+                </div>
+                ${activity.details ? `
+                    <div class="teacher-summary">
+                        <small>${activity.details.completion_summary}</small>
+                    </div>
+                ` : ''}
+                <div class="teacher-stats">
+                    <small>
+                        <i class="fas fa-users"></i> ${activity.students_count || 0} طالب
+                        ${activity.attendance_count ? `| <i class="fas fa-check"></i> ${activity.attendance_count} حضور` : ''}
+                        ${activity.recitation_sessions_count ? `| <i class="fas fa-microphone"></i> ${activity.recitation_sessions_count} تسميع` : ''}
+                    </small>
                 </div>
             </div>
         `;

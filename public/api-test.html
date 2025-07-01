@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار API للحلقات</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .error { background: #ffe6e6; color: #d00; }
+        .success { background: #e6ffe6; color: #060; }
+    </style>
+</head>
+<body>
+    <h1>اختبار API للحلقات</h1>
+    
+    <button onclick="testCirclesAPI()">اختبار جلب الحلقات</button>
+    <button onclick="testCircleStudents(1)">اختبار جلب طلاب الحلقة 1</button>
+    <button onclick="clearResults()">مسح النتائج</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+        
+        async function testCirclesAPI() {
+            addResult('جاري اختبار API الحلقات...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/circles?mosque_id=1`);
+                const data = await response.json();
+                
+                addResult('نتيجة API الحلقات:', 'success');
+                addResult(JSON.stringify(data, null, 2), 'result');
+                
+                if (data.البيانات && data.البيانات.length > 0) {
+                    addResult(`تم العثور على ${data.البيانات.length} حلقة`, 'success');
+                }
+                
+            } catch (error) {
+                addResult('خطأ في API الحلقات: ' + error.message, 'error');
+            }
+        }
+        
+        async function testCircleStudents(circleId) {
+            addResult(`جاري اختبار API طلاب الحلقة ${circleId}...`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/circles/${circleId}/students`);
+                const data = await response.json();
+                
+                addResult(`نتيجة API طلاب الحلقة ${circleId}:`, 'success');
+                addResult(JSON.stringify(data, null, 2), 'result');
+                
+            } catch (error) {
+                addResult(`خطأ في API طلاب الحلقة: ${error.message}`, 'error');
+            }
+        }
+        
+        function addResult(message, type) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<pre>${message}</pre>`;
+            results.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

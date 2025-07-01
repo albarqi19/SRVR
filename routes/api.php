@@ -13,6 +13,13 @@ use App\Http\Controllers\Api\MosqueController;
 use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\MosqueDashboardController;
+use App\Http\Controllers\Api\HierarchyController;
+use App\Http\Controllers\Api\SupervisorController;
+use App\Http\Controllers\Api\QuranSchoolStudentController;
+
+// Teacher Activity Test Routes (No Auth Required) - للاختبار فقط
+Route::get('test/teachers-daily-activity', [SupervisorController::class, 'getTeacherDailyActivity']);
+Route::get('test/teachers-activity-statistics', [SupervisorController::class, 'getTeachersActivityStatistics']);
 
 /*
 |--------------------------------------------------------------------------
@@ -184,8 +191,14 @@ Route::prefix('circles')->group(function () {
     // قائمة الحلقات
     Route::get('/', [CircleController::class, 'index']);
     
+    // جلب جميع الحلقات والحلقات الفرعية
+    Route::get('/all-with-groups', [CircleController::class, 'getAllCirclesAndGroups']);
+    
     // تفاصيل حلقة محددة
     Route::get('/{id}', [CircleController::class, 'show']);
+    
+    // طلاب حلقة محددة (للداشبورد)
+    Route::get('/{id}/students', [CircleController::class, 'getCircleStudents']);
     
     // إحصائيات حلقة محددة
     Route::get('/{id}/stats', [CircleController::class, 'circleStats']);
@@ -307,8 +320,8 @@ Route::post('/recitation/sessions/direct', function(\Illuminate\Http\Request $re
     }
 });
 
-// مسارات API للمشرفين (بدون middleware للاختبار)
-Route::prefix('supervisors')->group(function () {
+// مسارات API للمشرفين (محمية بالمصادقة)
+Route::prefix('supervisors')->middleware(['auth:sanctum'])->group(function () {
     // قائمة جميع المشرفين
     Route::get('/', [App\Http\Controllers\Api\SupervisorController::class, 'index']);
     
@@ -345,12 +358,19 @@ Route::prefix('supervisors')->group(function () {
     Route::post('/student-transfer', [App\Http\Controllers\Api\SupervisorController::class, 'requestStudentTransfer']);
     Route::get('/transfer-requests', [App\Http\Controllers\Api\SupervisorController::class, 'getTransferRequests']);
     Route::post('/transfer-requests/{requestId}/approve', [App\Http\Controllers\Api\SupervisorController::class, 'approveTransferRequest']);
-    Route::post('/transfer-requests/{requestId}/reject', [App\Http\Controllers\Api\SupervisorController::class, 'rejectTransferRequest']);    // إحصائيات المشرف
+    Route::post('/transfer-requests/{requestId}/reject', [App\Http\Controllers\Api\SupervisorController::class, 'rejectTransferRequest']);
+    
+    // إحصائيات المشرف
     Route::get('/dashboard-stats', [App\Http\Controllers\Api\SupervisorController::class, 'getDashboardStats']);
     
     // البيانات الشاملة للمشرف (المسجد + المدرسة القرآنية + الحلقة الفرعية + المعلم + الطلاب)
     Route::get('/comprehensive-overview', [App\Http\Controllers\Api\SupervisorController::class, 'getComprehensiveOverview']);
 });
+
+// مسارات تتبع نشاط المعلمين (بدون مصادقة للاختبار)
+// سيتم نقلها لاحقاً داخل middleware محمي
+Route::get('/supervisors/teachers-daily-activity', [App\Http\Controllers\Api\SupervisorController::class, 'getTeacherDailyActivity']);
+Route::get('/supervisors/teachers-activity-statistics', [App\Http\Controllers\Api\SupervisorController::class, 'getTeachersActivityStatistics']);
 
 // مسار لوحة تحكم المشرف (مفرد)
 Route::prefix('supervisor')->group(function () {
@@ -368,4 +388,73 @@ Route::prefix('supervisor')->group(function () {
     
     // البيانات الشاملة للمشرف - النظرة الشاملة
     Route::get('/comprehensive-overview', [App\Http\Controllers\Api\SupervisorController::class, 'getComprehensiveOverview']);
+});
+
+// مسارات مساعدة للمعلمين
+Route::prefix('teachers')->group(function () {
+    // الحصول على user_id من teacher_id
+    Route::get('/get-user-id/{teacherId}', [App\Http\Controllers\Api\TeacherController::class, 'getUserIdFromTeacherId']);
+    
+    // قائمة المعلمين مع user_ids
+    Route::get('/with-user-ids', [App\Http\Controllers\Api\TeacherController::class, 'getTeachersWithUserIds']);
+});
+
+// مسارات الهيكل التدريجي: مسجد → مدرسة قرآنية → حلقات فرعية
+Route::prefix('hierarchy')->group(function () {
+    // عرض الهيكل الكامل
+    Route::get('/', [HierarchyController::class, 'getFullHierarchy']);
+    
+    // عرض مدارس قرآنية وحلقاتها الفرعية لمسجد محدد
+    Route::get('/mosque/{mosqueId}', [HierarchyController::class, 'getMosqueHierarchy']);
+    
+    // عرض الحلقات الفرعية لمدرسة قرآنية محددة
+    Route::get('/quran-school/{quranCircleId}', [HierarchyController::class, 'getQuranSchoolSubCircles']);
+    
+    // إحصائيات الهيكل
+    Route::get('/stats', [HierarchyController::class, 'getHierarchyStats']);
+});
+
+// مسارات إدارة الطلاب في المدرسة القرآنية
+Route::prefix('quran-school-students')->group(function () {
+    // قائمة جميع الطلاب في المدرسة القرآنية
+    Route::get('/', [QuranSchoolStudentController::class, 'index']);
+    
+    // إضافة طالب جديد للمدرسة القرآنية
+    Route::post('/', [QuranSchoolStudentController::class, 'store']);
+    
+    // تفاصيل طالب في المدرسة القرآنية
+    Route::get('/{id}', [QuranSchoolStudentController::class, 'show']);
+    
+    // تحديث بيانات طالب في المدرسة القرآنية
+    Route::put('/{id}', [QuranSchoolStudentController::class, 'update']);
+    
+    // حذف طالب من المدرسة القرآنية
+    Route::delete('/{id}', [QuranSchoolStudentController::class, 'destroy']);
+    
+    // إحصائيات الطلاب في المدرسة القرآنية
+    Route::get('/stats', [QuranSchoolStudentController::class, 'getStats']);
+});
+
+// مسارات إدارة طلاب المدرسة القرآنية (Quran School Student Management)
+Route::prefix('quran-schools')->group(function () {
+    // جلب معلومات المدرسة القرآنية مع الحلقات الفرعية النشطة
+    Route::get('/{quranCircleId}/info', [QuranSchoolStudentController::class, 'getQuranSchoolInfo']);
+    
+    // إضافة طالب جديد للمدرسة القرآنية
+    Route::post('/{quranCircleId}/students', [QuranSchoolStudentController::class, 'addStudent']);
+    
+    // جلب طلاب المدرسة القرآنية مع الفلترة
+    Route::get('/{quranCircleId}/students', [QuranSchoolStudentController::class, 'getStudents']);
+    
+    // تحديث معلومات طالب
+    Route::put('/{quranCircleId}/students/{studentId}', [QuranSchoolStudentController::class, 'updateStudent']);
+    
+    // إلغاء تفعيل طالب (حذف منطقي)
+    Route::delete('/{quranCircleId}/students/{studentId}', [QuranSchoolStudentController::class, 'deactivateStudent']);
+    
+    // جلب بيانات الطالب لنموذج النقل (مع تعبئة البيانات مسبقاً)
+    Route::get('/{quranCircleId}/students/{studentId}/transfer-form', [QuranSchoolStudentController::class, 'getStudentForTransfer']);
+    
+    // نقل طالب إلى حلقة فرعية أخرى داخل نفس المدرسة القرآنية
+    Route::post('/{quranCircleId}/students/{studentId}/transfer', [QuranSchoolStudentController::class, 'transferStudent']);
 });

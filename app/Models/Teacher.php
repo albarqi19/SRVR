@@ -34,6 +34,7 @@ class Teacher extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'user_id',
         'identity_number',
         'name',
         'nationality',
@@ -143,6 +144,14 @@ class Teacher extends Model
         }
 
         return null;
+    }
+
+    /**
+     * العلاقة مع جدول المستخدمين
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**
