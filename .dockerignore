@@ -1,6 +1,8 @@
 node_modules
 .git
 .env
+vendor
+composer.lock
 storage/app/*
 storage/framework/cache/*
 storage/framework/sessions/*
@@ -9,3 +11,9 @@ storage/logs/*
 *.log
 .DS_Store
 Thumbs.db
+tests
+.github
+.vscode
+README.md
+CHANGELOG.md
+*.md
