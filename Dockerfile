@@ -35,11 +35,34 @@ RUN a2enmod rewrite
 # Set working directory
 WORKDIR /var/www/html
 
+# Copy composer.json and install script first for better caching
+COPY composer.json composer-install.sh ./
+
+# Make install script executable
+RUN chmod +x composer-install.sh
+
+# Create basic .env file to avoid missing file errors
+RUN echo "APP_NAME=GARB" > .env \
+    && echo "APP_ENV=production" >> .env \
+    && echo "APP_KEY=" >> .env \
+    && echo "APP_DEBUG=false" >> .env \
+    && echo "DB_CONNECTION=mysql" >> .env
+
+# Create basic directory structure first
+RUN mkdir -p storage/framework/cache \
+    && mkdir -p storage/framework/sessions \
+    && mkdir -p storage/framework/views \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache
+
+# Install PHP dependencies using the debug script
+RUN ./composer-install.sh
+
 # Copy application files
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-interaction
+# Run composer scripts separately
+RUN composer dump-autoload --optimize
 
 # Create required directories and set permissions
 RUN mkdir -p \
